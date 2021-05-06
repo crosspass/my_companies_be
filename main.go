@@ -62,8 +62,18 @@ func profits(c *gin.Context) {
 			"data":    companyIds,
 			"profit":  profits,
 		})
-
 	}
+}
+
+//
+// GET /profits?companies=1+2
+func companies(c *gin.Context) {
+	var companies []Company
+	db.Find(&companies) // find product with integer primary key
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "ok",
+		"companies": companies,
+	})
 }
 
 func setupRouter() *gin.Engine {
@@ -72,6 +82,7 @@ func setupRouter() *gin.Engine {
 		c.String(200, "pong")
 	})
 	r.GET("/profits", profits)
+	r.GET("/companies", companies)
 	return r
 }
 
