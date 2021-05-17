@@ -14,7 +14,8 @@ import (
 // Company for compnay
 type Company struct {
 	gorm.Model
-	Name string
+	Name    string
+	Profits []Profit
 }
 
 // Profit is for company's profit
@@ -26,7 +27,7 @@ type Profit struct {
 	FeiYingShou    int64
 	LiRun          int64
 	YingLiRun      int64
-	CompanyID      int64
+	CompanyID      uint
 }
 
 var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
@@ -67,6 +68,17 @@ func profits(c *gin.Context) {
 
 //
 // GET /profits?companies=1+2
+func company(c *gin.Context) {
+	var company Company
+	db.Preload("Profits").First(&company, 1) // find product with integer primary key
+	c.JSON(http.StatusOK, gin.H{
+		"message": "ok",
+		"company": company,
+	})
+}
+
+//
+// GET /profits?companies=1+2
 func companies(c *gin.Context) {
 	var companies []Company
 	db.Find(&companies) // find product with integer primary key
@@ -83,14 +95,16 @@ func setupRouter() *gin.Engine {
 	})
 	r.GET("/profits", profits)
 	r.GET("/companies", companies)
+	r.GET("/companies/:id", company)
 	return r
 }
 
 func main() {
 	// Read
 	var company Company
-	db.First(&company, 1) // find product with integer primary key
+	db.Preload("Profits").First(&company, 1) // find product with integer primary key
 	log.Println(company.Name)
+	log.Println("Profits: ", len(company.Profits))
 	// var profit Profit
 	// db.First(&profit, 1) // find product with integer primary key
 	// log.Println(profit.Ying_Shou)
