@@ -14,8 +14,9 @@ import (
 // Company for compnay
 type Company struct {
 	gorm.Model
-	Name    string
-	Profits []Profit
+	Name     string
+	Profits  []Profit
+	Comments []Comment
 }
 
 // Profit is for company's profit
@@ -28,6 +29,15 @@ type Profit struct {
 	LiRun          int64
 	YingLiRun      int64
 	CompanyID      uint
+}
+
+// Comment for chart
+type Comment struct {
+	gorm.Model
+	Chart     string
+	Content   string
+	CompanyID uint `form:"company_id"`
+	UserID    uint
 }
 
 var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
@@ -70,7 +80,7 @@ func profits(c *gin.Context) {
 // GET /profits?companies=1+2
 func company(c *gin.Context) {
 	var company Company
-	db.Preload("Profits").First(&company, 1) // find product with integer primary key
+	db.Preload("Profits").Preload("Comments").First(&company, 1) // find product with integer primary key
 	c.JSON(http.StatusOK, gin.H{
 		"message": "ok",
 		"company": company,
@@ -88,6 +98,31 @@ func companies(c *gin.Context) {
 	})
 }
 
+//
+// GET /profits?companies=1+2
+func saveComment(c *gin.Context) {
+	var comment Comment
+	c.BindJSON(&comment)
+	log.Println("comment", comment)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err,
+		})
+	} else {
+		result := db.Create(&comment) // pass pointer of data to Cre
+		if result.RowsAffected == 1 {
+			c.JSON(http.StatusOK, gin.H{
+				"message":   "ok",
+				"companies": comment,
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": result.Error,
+			})
+		}
+	}
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -96,6 +131,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/profits", profits)
 	r.GET("/companies", companies)
 	r.GET("/companies/:id", company)
+	r.POST("/comments", saveComment)
 	return r
 }
 

@@ -50,3 +50,19 @@ add
 CREATE INDEX IF NOT EXISTS companies_deleted_at_index ON companies USING btree(deleted_at);
 
 CREATE INDEX IF NOT EXISTS Profits_deleted_at_index ON profits USING btree(deleted_at);
+
+/*
+* comment for chart  
+ */
+CREATE TABLE IF NOT EXISTS comments (
+  id SERIAL,
+  chart varchar(20),
+  content text,
+  company_id bigint,
+  user_id bigint,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS Comments_deleted_at_index ON comments USING btree(deleted_at);
+CREATE INDEX IF NOT EXISTS Comments_company_id_user_id_index ON comments (user_id, company_id);
