@@ -66,3 +66,96 @@ CREATE TABLE IF NOT EXISTS comments (
 );
 CREATE INDEX IF NOT EXISTS Comments_deleted_at_index ON comments USING btree(deleted_at);
 CREATE INDEX IF NOT EXISTS Comments_company_id_user_id_index ON comments (user_id, company_id);
+
+
+ALTER table
+  companies
+add
+  column IF NOT EXISTS code char(8);
+
+CREATE INDEX IF NOT EXISTS Companies_code_index ON companies (code);
+
+
+CREATE TABLE IF NOT EXISTS report_summaries (
+  id SERIAL,
+  category char(2),
+  company_code char(8),
+  report_name char(10),
+  report_date bigint,
+  avg_roe float,
+  avg_roe_increase float,
+  np_per_share float,
+  np_per_share_increase float,
+  operate_cash_flow_ps float,
+  operate_cash_flow_ps_increase float,
+  basic_eps float,
+  basic_eps_increase float,
+  capital_reserve float,
+  capital_reserve_increase float,
+  undistri_profit_ps float,
+  undistri_profit_ps_increase float,
+  net_interest_of_total_assets float,
+  net_interest_of_total_assets_increase float,
+  net_selling_rate float,
+  net_selling_rate_increase float,
+  gross_selling_rate float,
+  gross_selling_rate_increase float,
+  total_revenue float,
+  total_revenue_increase float,
+  operating_income_yoy float,
+  operating_income_yoy_increase float,
+  net_profit_atsopc float,
+  net_profit_atsopc_increase float,
+  net_profit_atsopc_yoy float,
+  net_profit_atsopc_yoy_increase float,
+  net_profit_after_nrgal_atsolc float,
+  net_profit_after_nrgal_atsolc_increase float,
+  np_atsopc_nrgal_yoy float,
+  np_atsopc_nrgal_yoy_increase float,
+  ore_dlt float,
+  ore_dlt_increase float,
+  rop float,
+  rop_increase float,
+  asset_liab_ratio float,
+  asset_liab_ratio_increase float,
+  current_ratio float,
+  current_ratio_increase float,
+  quick_ratio float,
+  quick_ratio_increase float,
+  equity_multiplier float,
+  equity_multiplier_increase float,
+  equity_ratio float,
+  equity_ratio_increase float,
+  holder_equity float,
+  holder_equity_increase float,
+  ncf_from_oa_to_total_liab float,
+  ncf_from_oa_to_total_liab_increase float,
+  inventory_turnover_days float,
+  inventory_turnover_days_increase float,
+  receivable_turnover_days float,
+  receivable_turnover_days_increase float,
+  accounts_payable_turnover_days float,
+  accounts_payable_turnover_days_increase float,
+  cash_cycle float,
+  cash_cycle_increase float,
+  operating_cycle float,
+  operating_cycle_increase float,
+  total_capital_turnover float,
+  total_capital_turnover_increase float,
+  inventory_turnover float,
+  inventory_turnover_increase float,
+  account_receivable_turnover float,
+  account_receivable_turnover_increase float,
+  accounts_payable_turnover float,
+  accounts_payable_turnover_increase float,
+  current_asset_turnover_rate float,
+  current_asset_turnover_rate_increase float,
+  fixed_asset_turnover_ratio float,
+  fixed_asset_turnover_ratio_increase float,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS Report_summary_code_index ON  report_summaries (company_code);
+CREATE INDEX IF NOT EXISTS Report_summary_category_index ON report_summaries (category);

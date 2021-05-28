@@ -15,6 +15,7 @@ import (
 type Company struct {
 	gorm.Model
 	Name     string
+	Code     string
 	Profits  []Profit
 	Comments []Comment
 }
