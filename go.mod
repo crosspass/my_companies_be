@@ -1,4 +1,4 @@
-module example.com/hello
+module github.com/my-companies-be
 
 go 1.14
 

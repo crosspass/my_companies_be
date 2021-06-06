@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -157,10 +158,12 @@ func profits(c *gin.Context) {
 }
 
 //
-// GET /profits?companies=1+2
+// GET /companies/sz000325
 func company(c *gin.Context) {
 	var company Company
-	db.Preload("Profits").Preload("Comments").First(&company, 1) // find product with integer primary key
+	code := c.Param("code")
+	fmt.Println("code", code)
+	db.Where("code = ?", code).Find(&company) // find product with integer primary key
 	c.JSON(http.StatusOK, gin.H{
 		"message": "ok",
 		"company": company,
@@ -171,7 +174,7 @@ func company(c *gin.Context) {
 // GET /companies
 func companies(c *gin.Context) {
 	var companies []Company
-	db.Find(&companies) // find product with integer primary key
+	db.Limit(10).Find(&companies) // find product with integer primary key
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "ok",
 		"companies": companies,
@@ -183,10 +186,10 @@ func companies(c *gin.Context) {
 func reportSummary(c *gin.Context) {
 	code := c.Query("code")
 	var reportSummaries []ReportSummary
-	db.Where("company_code = ?", code).Find(&reportSummaries) // find product with integer primary key
+	db.Order("report_date asc").Where("company_code = ?", code).Find(&reportSummaries) // find product with integer primary key
 	c.JSON(http.StatusOK, gin.H{
-		"message": "ok",
-		"company": reportSummaries,
+		"message":         "ok",
+		"reportSummaries": reportSummaries,
 	})
 }
 
@@ -222,7 +225,7 @@ func setupRouter() *gin.Engine {
 	})
 	r.GET("/profits", profits)
 	r.GET("/companies", companies)
-	r.GET("/companies/:id", company)
+	r.GET("/companies/:code", company)
 	r.POST("/comments", saveComment)
 	r.GET("/reportSummary", reportSummary)
 	return r

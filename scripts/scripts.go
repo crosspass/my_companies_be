@@ -15,27 +15,10 @@ import (
 	"golang.org/x/net/publicsuffix"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/my-companies-be/models"
+	"github.com/my-companies-be/utils"
 )
-
-// Company for compnay
-type Company struct {
-	gorm.Model
-	Name    string
-	Code    string
-	Profits []Profit
-}
-
-// Profit is for company's profit
-type Profit struct {
-	gorm.Model
-	Year           string
-	YingShou       int64
-	YingYeChengBen int64
-	FeiYingShou    int64
-	LiRun          int64
-	YingLiRun      int64
-	CompanyID      uint
-}
 
 var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 var db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -96,7 +79,7 @@ func getCompanies() {
 			}
 			fmt.Printf("error_code: %d\n", companyReq.ErrorCode)
 			for _, companyReq := range companyReq.Data.List {
-				var company Company
+				var company models.Company
 				// fmt.Println(companyReq.Symbol)
 				db.Where("code = ?", companyReq.Symbol).First(&company)
 				if company.Code != "" {
@@ -107,7 +90,7 @@ func getCompanies() {
 				} else {
 					fmt.Println("create company")
 					fmt.Println(companyReq)
-					db.Create(&Company{Name: companyReq.Name, Code: companyReq.Symbol})
+					db.Create(&models.Company{Name: companyReq.Name, Code: companyReq.Symbol})
 				}
 			}
 			time.Sleep(time.Duration(2) * time.Second)
@@ -282,18 +265,33 @@ func getClient() *http.Client {
 }
 
 func getReportSummary() {
-	var companies []Company
-	db.Select("code").Find(&companies)
+	var companies []models.Company
+	var reportSummaries []ReportSummary
+	var companyCodes []string
+	var reportCodes []string
+	db.Table("companies").Select("code").Find(&companies)
+	db.Distinct("company_code").Select("company_code").Find(&reportSummaries)
+
+	for _, company := range companies {
+		companyCodes = append(companyCodes, company.Code)
+	}
+
+	for _, report := range reportSummaries {
+		reportCodes = append(reportCodes, report.CompanyCode)
+	}
+
+	codes := utils.Difference(companyCodes, reportCodes)
+	fmt.Println("codes", codes)
 
 	client := getClient()
-	for _, company := range companies {
+	for _, code := range codes {
 		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?type=ALL&is_detail=true&count=100"
 		req, err := http.NewRequest("GET", path, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 		q := req.URL.Query()
-		q.Set("symbol", company.Code)
+		q.Set("symbol", code)
 		req.URL.RawQuery = q.Encode()
 
 		fmt.Println(req.URL.String())
@@ -318,11 +316,11 @@ func getReportSummary() {
 		fmt.Println(reportSummaryReqstruct)
 		for _, reportSummaryReq := range reportSummaryReqstruct.Data.List {
 			var reportSummary ReportSummary
-			db.Where("company_code = ? AND report_name = ?", company.Code, reportSummaryReq.ReportName).First(&reportSummary)
+			db.Where("company_code = ? AND report_name = ?", code, reportSummaryReq.ReportName).First(&reportSummary)
 			if reportSummary.ReportName == "" {
 				reportSummary := ReportSummary{
 					Category:                            fetchQ(reportSummaryReq.ReportName),
-					CompanyCode:                         company.Code,
+					CompanyCode:                         code,
 					ReportName:                          reportSummaryReq.ReportName,
 					ReportDate:                          reportSummaryReq.ReportDate,
 					AvgRoe:                              reportSummaryReq.AvgRoe[0],
@@ -404,9 +402,213 @@ func getReportSummary() {
 
 }
 
+type IncomeReq struct {
+	ReportDate                  uint       `json:"report_date"`
+	ReportName                  string     `json:"report_name"`
+	NetProfit                   [2]float32 `json:"net_profit"`
+	NetProfitAtsopc             [2]float32 `json:"net_profit_atsopc"`
+	TotalRevenue                [2]float32 `json:"total_revenue"`
+	Op                          [2]float32 `json:"op"`
+	IncomeFromChgInFv           [2]float32 `json:"income_from_chg_in_fv"`
+	InvestIncomesFromRr         [2]float32 `json:"invest_incomes_from_rr"`
+	InvestIncome                [2]float32 `json:"invest_income"`
+	ExchgGain                   [2]float32 `json:"exchg_gain"`
+	OperatingTaxesAndSurcharge  [2]float32 `json:"operating_taxes_and_surcharge"`
+	AssetImpairmentLoss         [2]float32 `json:"asset_impairment_loss"`
+	NonOperatingIncome          [2]float32 `json:"non_operating_income"`
+	NonOperatingPayout          [2]float32 `json:"non_operating_payout"`
+	ProfitTotalAmt              [2]float32 `json:"profit_total_amt"`
+	MinorityGal                 [2]float32 `json:"minority_gal"`
+	BasicEps                    [2]float32 `json:"basic_eps"`
+	DltEarningsPerShare         [2]float32 `json:"dlt_earnings_per_share"`
+	OthrCompreIncomeAtoopc      [2]float32 `json:"othr_compre_income_atoopc"`
+	OthrCompreIncomeAtms        [2]float32 `json:"othr_compre_income_atms"`
+	TotalCompreIncome           [2]float32 `json:"total_compre_income"`
+	TotalCompreIncomeAtsopc     [2]float32 `json:"total_compre_income_atsopc"`
+	TotalCompreIncomeAtms       [2]float32 `json:"total_compre_income_atms"`
+	OthrCompreIncome            [2]float32 `json:"othr_compre_income"`
+	NetProfitAfterNrgalAtsolc   [2]float32 `json:"net_profit_after_nrgal_atsolc"`
+	IncomeTaxExpenses           [2]float32 `json:"income_tax_expenses"`
+	CreditImpairmentLoss        [2]float32 `json:"credit_impairment_loss"`
+	Revenue                     [2]float32 `json:"revenue"`
+	OperatingCosts              [2]float32 `json:"operating_costs"`
+	OperatingCost               [2]float32 `json:"operating_cost"`
+	SalesFee                    [2]float32 `json:"sales_fee"`
+	ManageFee                   [2]float32 `json:"manage_fee"`
+	FinancingExpenses           [2]float32 `json:"financing_expenses"`
+	RadCost                     [2]float32 `json:"rad_cost"`
+	FinanceCostInterestFee      [2]float32 `json:"finance_cost_interest_fee"`
+	FinanceCostInterestIncome   [2]float32 `json:"finance_cost_interest_income"`
+	AssetDisposalIncome         [2]float32 `json:"asset_disposal_income"`
+	OtherIncome                 [2]float32 `json:"other_income"`
+	NoncurrentAssetDisposalGain [2]float32 `json:"noncurrent_assets_dispose_gain"`
+	NoncurrentAssetDisposalLoss [2]float32 `json:"noncurrent_assets_dispose_loss"`
+	NetProfitBi                 [2]float32 `json:"net_profit_bi"`
+	ContinousOperatingNp        [2]float32 `json:"continous_operating_np"`
+}
+type IncomeDataReq struct {
+	QuoteName      string
+	LastReportRame string
+	List           []IncomeReq
+}
+
+type IncomeReqstruct struct {
+	Data             IncomeDataReq
+	ErrorCode        uint
+	ErrorDescription string
+}
+
+func getIncome() {
+	var companies []models.Company
+	var incomes []models.Income
+	var companyCodes []string
+	var reportCodes []string
+	db.Table("companies").Select("code").Find(&companies)
+	db.Distinct("company_code").Select("company_code").Find(&incomes)
+
+	for _, company := range companies {
+		companyCodes = append(companyCodes, company.Code)
+	}
+
+	for _, report := range incomes {
+		reportCodes = append(reportCodes, report.CompanyCode)
+	}
+
+	codes := utils.Difference(companyCodes, reportCodes)
+	fmt.Println("codes", codes)
+
+	client := getClient()
+	for _, code := range codes {
+		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/income.json?type=ALL&is_detail=true&count=100"
+		req, err := http.NewRequest("GET", path, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		q := req.URL.Query()
+		q.Set("symbol", code)
+		req.URL.RawQuery = q.Encode()
+
+		fmt.Println(req.URL.String())
+		resp, err := client.Do(req)
+		defer resp.Body.Close()
+		if err != nil {
+			log.Fatal("Errored when sending request to the server")
+		}
+
+		fmt.Println(resp.Status)
+		if resp.StatusCode != http.StatusOK {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Fatal(string(body))
+		}
+
+		var incomeReqstruct IncomeReqstruct
+
+		json.NewDecoder(resp.Body).Decode(&incomeReqstruct)
+		for _, incomeReq := range incomeReqstruct.Data.List {
+			var income models.Income
+			db.Where("company_code = ? AND report_name = ?", code, incomeReq.ReportName).First(&income)
+			if income.ReportName == "" {
+				income := models.Income{
+					Category:                            fetchQ(incomeReq.ReportName),
+					CompanyCode:                         code,
+					ReportName:                          incomeReq.ReportName,
+					ReportDate:                          incomeReq.ReportDate,
+					NetProfit:                           incomeReq.NetProfit[0],
+					NetProfitIncrease:                   incomeReq.NetProfit[1],
+					NetProfitAtsopc:                     incomeReq.NetProfitAtsopc[0],
+					NetProfitAtsopcIncrease:             incomeReq.NetProfitAtsopc[1],
+					TotalRevenue:                        incomeReq.TotalRevenue[0],
+					TotalRevenueIncrease:                incomeReq.TotalRevenue[1],
+					Op:                                  incomeReq.Op[0],
+					OpIncrease:                          incomeReq.Op[1],
+					IncomeFromChgInFv:                   incomeReq.IncomeFromChgInFv[0],
+					IncomeFromChgInFvIncrease:           incomeReq.IncomeFromChgInFv[1],
+					InvestIncomesFromRr:                 incomeReq.InvestIncomesFromRr[0],
+					InvestIncomesFromRrIncrease:         incomeReq.InvestIncomesFromRr[1],
+					InvestIncome:                        incomeReq.InvestIncome[0],
+					InvestIncomeIncrease:                incomeReq.InvestIncome[1],
+					ExchgGain:                           incomeReq.ExchgGain[0],
+					ExchgGainIncrease:                   incomeReq.ExchgGain[1],
+					OperatingTaxesAndSurcharge:          incomeReq.OperatingTaxesAndSurcharge[0],
+					OperatingTaxesAndSurchargeIncrease:  incomeReq.OperatingTaxesAndSurcharge[1],
+					AssetImpairmentLoss:                 incomeReq.AssetImpairmentLoss[0],
+					AssetImpairmentLossIncrease:         incomeReq.AssetImpairmentLoss[1],
+					NonOperatingIncome:                  incomeReq.NonOperatingIncome[0],
+					NonOperatingIncomeIncrease:          incomeReq.NonOperatingIncome[1],
+					NonOperatingPayout:                  incomeReq.NonOperatingPayout[0],
+					NonOperatingPayoutIncrease:          incomeReq.NonOperatingPayout[1],
+					ProfitTotalAmt:                      incomeReq.ProfitTotalAmt[0],
+					ProfitTotalAmtIncrease:              incomeReq.ProfitTotalAmt[1],
+					MinorityGal:                         incomeReq.MinorityGal[0],
+					MinorityGalIncrease:                 incomeReq.MinorityGal[1],
+					BasicEps:                            incomeReq.BasicEps[0],
+					BasicEpsIncrease:                    incomeReq.BasicEps[1],
+					DltEarningsPerShare:                 incomeReq.DltEarningsPerShare[0],
+					DltEarningsPerShareIncrease:         incomeReq.DltEarningsPerShare[1],
+					OthrCompreIncomeAtoopc:              incomeReq.OthrCompreIncomeAtoopc[0],
+					OthrCompreIncomeAtoopcIncrease:      incomeReq.OthrCompreIncomeAtoopc[1],
+					OthrCompreIncomeAtms:                incomeReq.OthrCompreIncomeAtms[0],
+					OthrCompreIncomeAtmsIncrease:        incomeReq.OthrCompreIncomeAtms[1],
+					TotalCompreIncome:                   incomeReq.TotalCompreIncome[0],
+					TotalCompreIncomeIncrease:           incomeReq.TotalCompreIncome[1],
+					TotalCompreIncomeAtsopc:             incomeReq.TotalCompreIncomeAtsopc[0],
+					TotalCompreIncomeAtsopcIncrease:     incomeReq.TotalCompreIncomeAtsopc[1],
+					TotalCompreIncomeAtms:               incomeReq.TotalCompreIncomeAtms[0],
+					TotalCompreIncomeAtmsIncrease:       incomeReq.TotalCompreIncomeAtms[1],
+					OthrCompreIncome:                    incomeReq.OthrCompreIncome[0],
+					OthrCompreIncomeIncrease:            incomeReq.OthrCompreIncome[1],
+					NetProfitAfterNrgalAtsolc:           incomeReq.NetProfitAfterNrgalAtsolc[0],
+					NetProfitAfterNrgalAtsolcIncrease:   incomeReq.NetProfitAfterNrgalAtsolc[1],
+					IncomeTaxExpenses:                   incomeReq.IncomeTaxExpenses[0],
+					IncomeTaxExpensesIncrease:           incomeReq.IncomeTaxExpenses[1],
+					CreditImpairmentLoss:                incomeReq.CreditImpairmentLoss[0],
+					CreditImpairmentLossIncrease:        incomeReq.CreditImpairmentLoss[1],
+					Revenue:                             incomeReq.Revenue[0],
+					RevenueIncrease:                     incomeReq.Revenue[1],
+					OperatingCosts:                      incomeReq.OperatingCosts[0],
+					OperatingCostsIncrease:              incomeReq.OperatingCosts[1],
+					OperatingCost:                       incomeReq.OperatingCost[0],
+					OperatingCostIncrease:               incomeReq.OperatingCost[1],
+					SalesFee:                            incomeReq.SalesFee[0],
+					SalesFeeIncrease:                    incomeReq.SalesFee[1],
+					ManageFee:                           incomeReq.ManageFee[0],
+					ManageFeeIncrease:                   incomeReq.ManageFee[1],
+					FinancingExpenses:                   incomeReq.FinancingExpenses[0],
+					FinancingExpensesIncrease:           incomeReq.FinancingExpenses[1],
+					RadCost:                             incomeReq.RadCost[0],
+					RadCostIncrease:                     incomeReq.RadCost[1],
+					FinanceCostInterestFee:              incomeReq.FinanceCostInterestFee[0],
+					FinanceCostInterestFeeIncrease:      incomeReq.FinanceCostInterestFee[1],
+					FinanceCostInterestIncome:           incomeReq.FinanceCostInterestIncome[0],
+					FinanceCostInterestIncomeIncrease:   incomeReq.FinanceCostInterestIncome[1],
+					AssetDisposalIncome:                 incomeReq.AssetDisposalIncome[0],
+					AssetDisposalIncomeIncrease:         incomeReq.AssetDisposalIncome[1],
+					OtherIncome:                         incomeReq.OtherIncome[0],
+					OtherIncomeIncrease:                 incomeReq.OtherIncome[1],
+					NoncurrentAssetDisposalGain:         incomeReq.NoncurrentAssetDisposalGain[0],
+					NoncurrentAssetDisposalGainIncrease: incomeReq.NoncurrentAssetDisposalGain[1],
+					NoncurrentAssetDisposalLoss:         incomeReq.NoncurrentAssetDisposalLoss[0],
+					NoncurrentAssetDisposalLossIncrease: incomeReq.NoncurrentAssetDisposalLoss[1],
+					NetProfitBi:                         incomeReq.NetProfitBi[0],
+					NetProfitBiIncrease:                 incomeReq.NetProfitBi[1],
+					ContinousOperatingNp:                incomeReq.ContinousOperatingNp[0],
+					ContinousOperatingNpIncrease:        incomeReq.ContinousOperatingNp[1],
+				}
+				db.Create(&income)
+			}
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+	}
+
+}
+
 // parse xueqiu company's finace data
 func main() {
 	// getCompanies()
 	// os.Setenv("HTTP_PROXY", "http://127.0.0.1:8008")
-	getReportSummary()
+	// getReportSummary()
+	getIncome()
 }

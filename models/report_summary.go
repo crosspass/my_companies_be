@@ -1,0 +1,82 @@
+package models
+
+import "gorm.io/gorm"
+
+// ReportSummary for company
+type ReportSummary struct {
+	gorm.Model
+	Category                            string
+	CompanyCode                         string
+	ReportName                          string
+	ReportDate                          uint64
+	AvgRoe                              float32
+	AvgRoeIncrease                      float32
+	NpPerShare                          float32
+	NpPerShareIncrease                  float32
+	OperateCashFlowPs                   float32
+	OperateCashFlowPsIncrease           float32
+	BasicEps                            float32
+	BasicEpsIncrease                    float32
+	CapitalReserve                      float32
+	CapitalReserveIncrease              float32
+	UndistriProfitPs                    float32
+	UndistriProfitPsIncrease            float32
+	NetInterestOfTotalAssets            float32
+	NetInterestOfTotalAssetsIncrease    float32
+	NetSellingRate                      float32
+	NetSellingRateIncrease              float32
+	GrossSellingRate                    float32
+	GrossSellingRateIncrease            float32
+	TotalRevenue                        float32
+	TotalRevenueIncrease                float32
+	OperatingIncomeYoy                  float32
+	OperatingIncomeYoyIncrease          float32
+	NetProfitAtsopc                     float32
+	NetProfitAtsopcIncrease             float32
+	NetProfitAtsopcYoy                  float32
+	NetProfitAtsopcYoyIncrease          float32
+	NetProfitAfterNrgalAtsolc           float32
+	NetProfitAfterNrgalAtsolcIncrease   float32
+	NpAtsopcNrgalYoy                    float32
+	NpAtsopcNrgalYoyIncrease            float32
+	OreDlt                              float32
+	OreDltIncrease                      float32
+	Rop                                 float32
+	RopIncrease                         float32
+	AssetLiabRatio                      float32
+	AssetLiabRatioIncrease              float32
+	CurrentRatio                        float32
+	CurrentRatioIncrease                float32
+	QuickRatio                          float32
+	QuickRatioIncrease                  float32
+	EquityMultiplier                    float32
+	EquityMultiplierIncrease            float32
+	EquityRatio                         float32
+	EquityRatioIncrease                 float32
+	HolderEquity                        float32
+	HolderEquityIncrease                float32
+	NcfFromOaToTotalLiab                float32
+	NcfFromOaToTotalLiabIncrease        float32
+	InventoryTurnoverDays               float32
+	InventoryTurnoverDaysIncrease       float32
+	ReceivableTurnoverDays              float32
+	ReceivableTurnoverDaysIncrease      float32
+	AccountsPayableTurnoverDays         float32
+	AccountsPayableTurnoverDaysIncrease float32
+	CashCycle                           float32
+	CashCycleIncrease                   float32
+	OperatingCycle                      float32
+	OperatingCycleIncrease              float32
+	TotalCapitalTurnover                float32
+	TotalCapitalTurnoverIncrease        float32
+	InventoryTurnover                   float32
+	InventoryTurnoverIncrease           float32
+	AccountReceivableTurnover           float32
+	AccountReceivableTurnoverIncrease   float32
+	AccountsPayableTurnover             float32
+	AccountsPayableTurnoverIncrease     float32
+	CurrentAssetTurnoverRate            float32
+	CurrentAssetTurnoverRateIncrease    float32
+	FixedAssetTurnoverRatio             float32
+	FixedAssetTurnoverRatioIncrease     float32
+}
