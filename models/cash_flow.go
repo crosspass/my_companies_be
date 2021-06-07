@@ -1,0 +1,88 @@
+package models
+
+import "gorm.io/gorm"
+
+// CashFlow for company
+type CashFlow struct {
+	gorm.Model
+	Category                           string
+	CompanyCode                        string
+	ReportName                         string
+	ReportDate                         uint
+	NcfFromOa                          float32
+	NcfFromOaIncrease                  float32
+	NcfFromIa                          float32
+	NcfFromIaIncrease                  float32
+	NcfFromFa                          float32
+	NcfFromFaIncrease                  float32
+	CashReceivedOfOthrOa               float32
+	CashReceivedOfOthrOaIncrease       float32
+	SubTotalOfCiFromOa                 float32
+	SubTotalOfCiFromOaIncrease         float32
+	CashPaidToEmployeeEtc              float32
+	CashPaidToEmployeeEtcIncrease      float32
+	PaymentsOfAllTaxes                 float32
+	PaymentsOfAllTaxesIncrease         float32
+	OthrcashPaidRelatingToOa           float32
+	OthrcashPaidRelatingToOaIncrease   float32
+	SubTotalOfCosFromOa                float32
+	SubTotalOfCosFromOaIncrease        float32
+	CashReceivedOfDspslInvest          float32
+	CashReceivedOfDspslInvestIncrease  float32
+	InvestIncomeCashReceived           float32
+	InvestIncomeCashReceivedIncrease   float32
+	NetCashOfDisposalAssets            float32
+	NetCashOfDisposalAssetsIncrease    float32
+	NetCashOfDisposalBranch            float32
+	NetCashOfDisposalBranchIncrease    float32
+	CashReceivedOfOthrIa               float32
+	CashReceivedOfOthrIaIncrease       float32
+	SubTotalOfCiFromIa                 float32
+	SubTotalOfCiFromIaIncrease         float32
+	InvestPaidCash                     float32
+	InvestPaidCashIncrease             float32
+	CashPaidForAssets                  float32
+	CashPaidForAssetsIncrease          float32
+	OthrcashPaidRelatingToIa           float32
+	OthrcashPaidRelatingToIaIncrease   float32
+	SubTotalOfCosFromIa                float32
+	SubTotalOfCosFromIaIncrease        float32
+	CashReceivedOfAbsorbInvest         float32
+	CashReceivedOfAbsorbInvestIncrease float32
+	CashReceivedFromInvestor           float32
+	CashReceivedFromInvestorIncrease   float32
+	CashReceivedFromBondIssue          float32
+	CashReceivedFromBondIssueIncrease  float32
+	CashReceivedOfBorrowing            float32
+	CashReceivedOfBorrowingIncrease    float32
+	CashReceivedOfOthrFa               float32
+	CashReceivedOfOthrFaIncrease       float32
+	SubTotalOfCiFromFa                 float32
+	SubTotalOfCiFromFaIncrease         float32
+	CashPayForDebt                     float32
+	CashPayForDebtIncrease             float32
+	CashPaidOfDistribution             float32
+	CashPaidOfDistributionIncrease     float32
+	BranchPaidToMinorityHolder         float32
+	BranchPaidToMinorityHolderIncrease float32
+	OthrcashPaidRelatingToFa           float32
+	OthrcashPaidRelatingToFaIncrease   float32
+	SubTotalOfCosFromFa                float32
+	SubTotalOfCosFromFaIncrease        float32
+	EffectOfExchangeChgOnCce           float32
+	EffectOfExchangeChgOnCceIncrease   float32
+	NetIncreaseInCce                   float32
+	NetIncreaseInCceIncrease           float32
+	InitialBalanceOfCce                float32
+	InitialBalanceOfCceIncrease        float32
+	FinalBalanceOfCce                  float32
+	FinalBalanceOfCceIncrease          float32
+	CashReceivedOfSalesService         float32
+	CashReceivedOfSalesServiceIncrease float32
+	RefundOfTaxAndLevies               float32
+	RefundOfTaxAndLeviesIncrease       float32
+	GoodsBuyAndServiceCashPay          float32
+	GoodsBuyAndServiceCashPayIncrease  float32
+	NetCashAmtFromBranch               float32
+	NetCashAmtFromBranchIncrease       float32
+}

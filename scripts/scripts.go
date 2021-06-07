@@ -605,10 +605,207 @@ func getIncome() {
 
 }
 
+type CashFlowReq struct {
+	ReportDate                 uint       `json:"report_date"`
+	ReportName                 string     `json:"report_name"`
+	NcfFromOa                  [2]float32 `json:"ncf_from_oa"`
+	NcfFromIa                  [2]float32 `json:"ncf_from_ia"`
+	NcfFromFa                  [2]float32 `json:"ncf_from_fa"`
+	CashReceivedOfOthrOa       [2]float32 `json:"cash_received_of_othr_oa"`
+	SubTotalOfCiFromOa         [2]float32 `json:"sub_total_of_ci_from_oa"`
+	CashPaidToEmployeeEtc      [2]float32 `json:"cash_paid_to_employee_etc"`
+	PaymentsOfAllTaxes         [2]float32 `json:"payments_of_all_taxes"`
+	OthrcashPaidRelatingToOa   [2]float32 `json:"othrcash_paid_relating_to_oa"`
+	SubTotalOfCosFromOa        [2]float32 `json:"sub_total_of_cos_from_oa"`
+	CashReceivedOfDspslInvest  [2]float32 `json:"cash_received_of_dspsl_invest"`
+	InvestIncomeCashReceived   [2]float32 `json:"invest_income_cash_received"`
+	NetCashOfDisposalAssets    [2]float32 `json:"net_cash_of_disposal_assets"`
+	NetCashOfDisposalBranch    [2]float32 `json:"net_cash_of_disposal_branch"`
+	CashReceivedOfOthrIa       [2]float32 `json:"cash_received_of_othr_ia"`
+	SubTotalOfCiFromIa         [2]float32 `json:"sub_total_of_ci_from_ia"`
+	InvestPaidCash             [2]float32 `json:"invest_paid_cash"`
+	CashPaidForAssets          [2]float32 `json:"cash_paid_for_assets"`
+	OthrcashPaidRelatingToIa   [2]float32 `json:"othrcash_paid_relating_to_ia"`
+	SubTotalOfCosFromIa        [2]float32 `json:"sub_total_of_cos_from_ia"`
+	CashReceivedOfAbsorbInvest [2]float32 `json:"cash_received_of_absorb_invest"`
+	CashReceivedFromInvestor   [2]float32 `json:"cash_received_from_investor"`
+	CashReceivedFromBondIssue  [2]float32 `json:"cash_received_from_bond_issue"`
+	CashReceivedOfBorrowing    [2]float32 `json:"cash_received_of_borrowing"`
+	CashReceivedOfOthrFa       [2]float32 `json:"cash_received_of_othr_fa"`
+	SubTotalOfCiFromFa         [2]float32 `json:"sub_total_of_ci_from_fa"`
+	CashPayForDebt             [2]float32 `json:"cash_pay_for_debt"`
+	CashPaidOfDistribution     [2]float32 `json:"cash_paid_of_distribution"`
+	BranchPaidToMinorityHolder [2]float32 `json:"branch_paid_to_minority_holder"`
+	OthrcashPaidRelatingToFa   [2]float32 `json:"othrcash_paid_relating_to_fa"`
+	SubTotalOfCosFromFa        [2]float32 `json:"sub_total_of_cos_from_fa"`
+	EffectOfExchangeChgOnCce   [2]float32 `json:"effect_of_exchange_chg_on_cce"`
+	NetIncreaseInCce           [2]float32 `json:"net_increase_in_cce"`
+	InitialBalanceOfCce        [2]float32 `json:"initial_balance_of_cce"`
+	FinalBalanceOfCce          [2]float32 `json:"final_balance_of_cce"`
+	CashReceivedOfSalesService [2]float32 `json:"cash_received_of_sales_service"`
+	RefundOfTaxAndLevies       [2]float32 `json:"refund_of_tax_and_levies"`
+	GoodsBuyAndServiceCashPay  [2]float32 `json:"goods_buy_and_service_cash_pay"`
+	NetCashAmtFromBranch       [2]float32 `json:"net_cash_amt_from_branch"`
+}
+type CashFlowDataReq struct {
+	QuoteName      string
+	LastReportRame string
+	List           []CashFlowReq
+}
+
+type CashFlowReqstruct struct {
+	Data             CashFlowDataReq
+	ErrorCode        uint
+	ErrorDescription string
+}
+
+func getCashFlow() {
+	var companies []models.Company
+	var cashFlow []models.CashFlow
+	var companyCodes []string
+	var reportCodes []string
+	db.Table("companies").Select("code").Find(&companies)
+	db.Distinct("company_code").Select("company_code").Find(&cashFlow)
+
+	for _, company := range companies {
+		companyCodes = append(companyCodes, company.Code)
+	}
+
+	for _, report := range cashFlow {
+		reportCodes = append(reportCodes, report.CompanyCode)
+	}
+
+	codes := utils.Difference(companyCodes, reportCodes)
+	fmt.Println("codes", codes)
+
+	client := getClient()
+	for _, code := range codes {
+		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/cash_flow.json?type=ALL&is_detail=true&count=100"
+		req, err := http.NewRequest("GET", path, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		q := req.URL.Query()
+		q.Set("symbol", code)
+		req.URL.RawQuery = q.Encode()
+
+		fmt.Println(req.URL.String())
+		resp, err := client.Do(req)
+		defer resp.Body.Close()
+		if err != nil {
+			log.Fatal("Errored when sending request to the server")
+		}
+
+		fmt.Println(resp.Status)
+		if resp.StatusCode != http.StatusOK {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Fatal(string(body))
+		}
+
+		var cashFlowReqstruct CashFlowReqstruct
+
+		json.NewDecoder(resp.Body).Decode(&cashFlowReqstruct)
+		for _, cashFlowReq := range cashFlowReqstruct.Data.List {
+			var cashFlow models.CashFlow
+			db.Where("company_code = ? AND report_name = ?", code, cashFlowReq.ReportName).First(&cashFlow)
+			if cashFlow.ReportName == "" {
+				cashFlow := models.CashFlow{
+					Category:                           fetchQ(cashFlowReq.ReportName),
+					CompanyCode:                        code,
+					ReportName:                         cashFlowReq.ReportName,
+					ReportDate:                         cashFlowReq.ReportDate,
+					NcfFromOa:                          cashFlowReq.NcfFromOa[0],
+					NcfFromOaIncrease:                  cashFlowReq.NcfFromOa[1],
+					NcfFromIa:                          cashFlowReq.NcfFromIa[0],
+					NcfFromIaIncrease:                  cashFlowReq.NcfFromIa[1],
+					NcfFromFa:                          cashFlowReq.NcfFromFa[0],
+					NcfFromFaIncrease:                  cashFlowReq.NcfFromFa[1],
+					CashReceivedOfOthrOa:               cashFlowReq.CashReceivedOfOthrOa[0],
+					CashReceivedOfOthrOaIncrease:       cashFlowReq.CashReceivedOfOthrOa[1],
+					SubTotalOfCiFromOa:                 cashFlowReq.SubTotalOfCiFromOa[0],
+					SubTotalOfCiFromOaIncrease:         cashFlowReq.SubTotalOfCiFromOa[1],
+					CashPaidToEmployeeEtc:              cashFlowReq.CashPaidToEmployeeEtc[0],
+					CashPaidToEmployeeEtcIncrease:      cashFlowReq.CashPaidToEmployeeEtc[1],
+					PaymentsOfAllTaxes:                 cashFlowReq.PaymentsOfAllTaxes[0],
+					PaymentsOfAllTaxesIncrease:         cashFlowReq.PaymentsOfAllTaxes[1],
+					OthrcashPaidRelatingToOa:           cashFlowReq.OthrcashPaidRelatingToOa[0],
+					OthrcashPaidRelatingToOaIncrease:   cashFlowReq.OthrcashPaidRelatingToOa[1],
+					SubTotalOfCosFromOa:                cashFlowReq.SubTotalOfCosFromOa[0],
+					SubTotalOfCosFromOaIncrease:        cashFlowReq.SubTotalOfCosFromOa[1],
+					CashReceivedOfDspslInvest:          cashFlowReq.CashReceivedOfDspslInvest[0],
+					CashReceivedOfDspslInvestIncrease:  cashFlowReq.CashReceivedOfDspslInvest[1],
+					InvestIncomeCashReceived:           cashFlowReq.InvestIncomeCashReceived[0],
+					InvestIncomeCashReceivedIncrease:   cashFlowReq.InvestIncomeCashReceived[1],
+					NetCashOfDisposalAssets:            cashFlowReq.NetCashOfDisposalAssets[0],
+					NetCashOfDisposalAssetsIncrease:    cashFlowReq.NetCashOfDisposalAssets[1],
+					NetCashOfDisposalBranch:            cashFlowReq.NetCashOfDisposalBranch[0],
+					NetCashOfDisposalBranchIncrease:    cashFlowReq.NetCashOfDisposalBranch[1],
+					CashReceivedOfOthrIa:               cashFlowReq.CashReceivedOfOthrIa[0],
+					CashReceivedOfOthrIaIncrease:       cashFlowReq.CashReceivedOfOthrIa[1],
+					SubTotalOfCiFromIa:                 cashFlowReq.SubTotalOfCiFromIa[0],
+					SubTotalOfCiFromIaIncrease:         cashFlowReq.SubTotalOfCiFromIa[1],
+					InvestPaidCash:                     cashFlowReq.InvestPaidCash[0],
+					InvestPaidCashIncrease:             cashFlowReq.InvestPaidCash[1],
+					CashPaidForAssets:                  cashFlowReq.CashPaidForAssets[0],
+					CashPaidForAssetsIncrease:          cashFlowReq.CashPaidForAssets[1],
+					OthrcashPaidRelatingToIa:           cashFlowReq.OthrcashPaidRelatingToIa[0],
+					OthrcashPaidRelatingToIaIncrease:   cashFlowReq.OthrcashPaidRelatingToIa[1],
+					SubTotalOfCosFromIa:                cashFlowReq.SubTotalOfCosFromIa[0],
+					SubTotalOfCosFromIaIncrease:        cashFlowReq.SubTotalOfCosFromIa[1],
+					CashReceivedOfAbsorbInvest:         cashFlowReq.CashReceivedOfAbsorbInvest[0],
+					CashReceivedOfAbsorbInvestIncrease: cashFlowReq.CashReceivedOfAbsorbInvest[1],
+					CashReceivedFromInvestor:           cashFlowReq.CashReceivedFromInvestor[0],
+					CashReceivedFromInvestorIncrease:   cashFlowReq.CashReceivedFromInvestor[1],
+					CashReceivedFromBondIssue:          cashFlowReq.CashReceivedFromBondIssue[0],
+					CashReceivedFromBondIssueIncrease:  cashFlowReq.CashReceivedFromBondIssue[1],
+					CashReceivedOfBorrowing:            cashFlowReq.CashReceivedOfBorrowing[0],
+					CashReceivedOfBorrowingIncrease:    cashFlowReq.CashReceivedOfBorrowing[1],
+					CashReceivedOfOthrFa:               cashFlowReq.CashReceivedOfOthrFa[0],
+					CashReceivedOfOthrFaIncrease:       cashFlowReq.CashReceivedOfOthrFa[1],
+					SubTotalOfCiFromFa:                 cashFlowReq.SubTotalOfCiFromFa[0],
+					SubTotalOfCiFromFaIncrease:         cashFlowReq.SubTotalOfCiFromFa[1],
+					CashPayForDebt:                     cashFlowReq.CashPayForDebt[0],
+					CashPayForDebtIncrease:             cashFlowReq.CashPayForDebt[1],
+					CashPaidOfDistribution:             cashFlowReq.CashPaidOfDistribution[0],
+					CashPaidOfDistributionIncrease:     cashFlowReq.CashPaidOfDistribution[1],
+					BranchPaidToMinorityHolder:         cashFlowReq.BranchPaidToMinorityHolder[0],
+					BranchPaidToMinorityHolderIncrease: cashFlowReq.BranchPaidToMinorityHolder[1],
+					OthrcashPaidRelatingToFa:           cashFlowReq.OthrcashPaidRelatingToFa[0],
+					OthrcashPaidRelatingToFaIncrease:   cashFlowReq.OthrcashPaidRelatingToFa[1],
+					SubTotalOfCosFromFa:                cashFlowReq.SubTotalOfCosFromFa[0],
+					SubTotalOfCosFromFaIncrease:        cashFlowReq.SubTotalOfCosFromFa[1],
+					EffectOfExchangeChgOnCce:           cashFlowReq.EffectOfExchangeChgOnCce[0],
+					EffectOfExchangeChgOnCceIncrease:   cashFlowReq.EffectOfExchangeChgOnCce[1],
+					NetIncreaseInCce:                   cashFlowReq.NetIncreaseInCce[0],
+					NetIncreaseInCceIncrease:           cashFlowReq.NetIncreaseInCce[1],
+					InitialBalanceOfCce:                cashFlowReq.InitialBalanceOfCce[0],
+					InitialBalanceOfCceIncrease:        cashFlowReq.InitialBalanceOfCce[1],
+					FinalBalanceOfCce:                  cashFlowReq.FinalBalanceOfCce[0],
+					FinalBalanceOfCceIncrease:          cashFlowReq.FinalBalanceOfCce[1],
+					CashReceivedOfSalesService:         cashFlowReq.CashReceivedOfSalesService[0],
+					CashReceivedOfSalesServiceIncrease: cashFlowReq.CashReceivedOfSalesService[1],
+					RefundOfTaxAndLevies:               cashFlowReq.RefundOfTaxAndLevies[0],
+					RefundOfTaxAndLeviesIncrease:       cashFlowReq.RefundOfTaxAndLevies[1],
+					GoodsBuyAndServiceCashPay:          cashFlowReq.GoodsBuyAndServiceCashPay[0],
+					GoodsBuyAndServiceCashPayIncrease:  cashFlowReq.GoodsBuyAndServiceCashPay[1],
+					NetCashAmtFromBranch:               cashFlowReq.NetCashAmtFromBranch[0],
+					NetCashAmtFromBranchIncrease:       cashFlowReq.NetCashAmtFromBranch[1],
+				}
+				db.Create(&cashFlow)
+			}
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+	}
+}
+
 // parse xueqiu company's finace data
 func main() {
 	// getCompanies()
 	// os.Setenv("HTTP_PROXY", "http://127.0.0.1:8008")
 	// getReportSummary()
-	getIncome()
+	//getIncome()
+	getCashFlow()
 }
