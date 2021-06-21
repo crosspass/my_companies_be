@@ -201,8 +201,32 @@ func incomes(c *gin.Context) {
 	var incomes []models.Income
 	db.Order("report_date asc").Where("company_code = ?", code).Find(&incomes) // find product with integer primary key
 	c.JSON(http.StatusOK, gin.H{
-		"message":         "ok",
-		"reportSummaries": incomes,
+		"message": "ok",
+		"incomes": incomes,
+	})
+}
+
+//
+// GET /cashFlows?code=SH600519
+func cashFlows(c *gin.Context) {
+	code := c.Query("code")
+	var cashFlows []models.CashFlow
+	db.Order("report_date asc").Where("company_code = ?", code).Find(&cashFlows) // find product with integer primary key
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "ok",
+		"cashFlows": cashFlows,
+	})
+}
+
+//
+// GET /balances?code=SH600519
+func balances(c *gin.Context) {
+	code := c.Query("code")
+	var balances []models.Balance
+	db.Order("report_date asc").Where("company_code = ?", code).Find(&balances)
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "ok",
+		"balances": balances,
 	})
 }
 
@@ -242,6 +266,8 @@ func setupRouter() *gin.Engine {
 	r.POST("/comments", saveComment)
 	r.GET("/reportSummary", reportSummary)
 	r.GET("/incomes", incomes)
+	r.GET("/cashFlows", cashFlows)
+	r.GET("/balances", balances)
 	return r
 }
 
