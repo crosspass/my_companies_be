@@ -531,3 +531,28 @@ CREATE TABLE IF NOT EXISTS balances (
 );
 
 CREATE INDEX IF NOT EXISTS balance_code_index ON balances (company_code);
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL,
+  user_name varchar(20),
+  full_name varchar(20),
+  email varchar(20),
+  register_token text,
+  active_time timestamptz,
+  password_hash text,
+  password_salt text,
+  is_actived boolean,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS user_sessions (
+  session_key varchar primary key,
+  user_id int not null,
+  login_time timestamptz,
+  last_seen_time timestamptz,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+)
