@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/my-companies-be/mailer"
 	"github.com/my-companies-be/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,9 +29,8 @@ func RegisterUser(c *gin.Context) {
 	var userReq UserReq
 	var user models.User
 	err := c.BindJSON(&userReq)
-	message := c.PostForm("user_name")
 	log.Println("user", userReq)
-	log.Println("user_name", message)
+	log.Println("email", userReq.Email)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -38,15 +38,16 @@ func RegisterUser(c *gin.Context) {
 		})
 	} else {
 		user.Email = userReq.Email
-		user.UserName = userReq.UserName
 		result := db.Create(&user)
+		user.SetPassword(userReq.Password)
+		mailer.SendActiveAccount(&user)
 		if result.Error != nil {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    403,
 				"message": result.Error.Error(),
 			})
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"code":    200,
 				"message": user,
 			})
@@ -64,4 +65,36 @@ func ActiveUser(ctx *gin.Context) {
 		"code":    200,
 		"message": err,
 	})
+}
+
+// Login user login website
+func Login(c *gin.Context) {
+	var userReq UserReq
+	var user models.User
+	err = c.BindJSON(&userReq)
+	log.Println("comment", userReq)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err,
+		})
+	} else {
+		result := db.Preload("Session").Find(&user, "email = ?", userReq.Email)
+		if result.RowsAffected == 1 {
+			if user.ValidatePassword(userReq.Password) {
+				token := user.GenerateToken()
+				c.JSON(http.StatusOK, gin.H{
+					"message": "ok",
+					"token":   token,
+				})
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"message": "email or password error!",
+				})
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "email or password error!",
+			})
+		}
+	}
 }

@@ -547,12 +547,15 @@ CREATE TABLE IF NOT EXISTS users (
   deleted_at timestamptz
 );
 
-CREATE TABLE IF NOT EXISTS user_sessions (
-  session_key varchar primary key,
+CREATE TABLE IF NOT EXISTS sessions (
+  id SERIAL,
   user_id int not null,
+  key varchar,
   login_time timestamptz,
   last_seen_time timestamptz,
   created_at timestamptz,
   updated_at timestamptz,
   deleted_at timestamptz
-)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS sessions_user_idx on sessions (id);
+CREATE INDEX IF NOT EXISTS sessoins_key_index ON sessions (key);

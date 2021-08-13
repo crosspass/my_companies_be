@@ -40,7 +40,11 @@ func SendActiveAccount(u *models.User) {
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	t, _ := template.ParseFiles("register.html")
+	t, err := template.ParseFiles("/Users/wu/github.com/my-companies-be/mailer/register.html")
+
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	var body bytes.Buffer
 
@@ -54,7 +58,7 @@ func SendActiveAccount(u *models.User) {
 	})
 
 	// Sending email.
-	err := smtp.SendMail(smtpAddress, auth, from, to, body.Bytes())
+	err = smtp.SendMail(smtpAddress, auth, from, to, body.Bytes())
 	if err != nil {
 		log.Println(err)
 		return

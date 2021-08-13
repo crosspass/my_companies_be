@@ -191,6 +191,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/cashFlows", cashFlows)
 	r.GET("/balances", balances)
 	r.POST("/users/register", controllers.RegisterUser)
+	r.POST("/users/login", controllers.Login)
 	r.GET("/users/active", controllers.ActiveUser)
 	return r
 }
