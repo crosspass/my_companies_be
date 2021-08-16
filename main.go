@@ -193,6 +193,7 @@ func setupRouter() *gin.Engine {
 	r.POST("/users/register", controllers.RegisterUser)
 	r.POST("/users/login", controllers.Login)
 	r.GET("/users/active", controllers.ActiveUser)
+	r.POST("/articles", controllers.CreateArticle)
 	return r
 }
 

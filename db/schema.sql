@@ -559,3 +559,16 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS sessions_user_idx on sessions (id);
 CREATE INDEX IF NOT EXISTS sessoins_key_index ON sessions (key);
+
+/*
+ * articles
+ */
+CREATE TABLE IF NOT EXISTS articles (
+  id SERIAL,
+  content text,
+  user_id bigint,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS articles_user_id_index ON articles (user_id);
