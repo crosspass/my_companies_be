@@ -64,3 +64,18 @@ func ListArticles(c *gin.Context) {
 		"message":  "ok",
 	})
 }
+
+// Article get specified article by ID
+func Article(c *gin.Context) {
+	var session models.Session
+	var article models.Article
+	token := c.GetHeader("Token")
+	log.Println("token", token)
+	db.Where("key = ?", token).Find(&session)
+	id := c.Param("id")
+	db.Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
+	c.JSON(http.StatusOK, gin.H{
+		"article": article,
+		"message": "ok",
+	})
+}

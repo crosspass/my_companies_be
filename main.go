@@ -195,6 +195,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/users/active", controllers.ActiveUser)
 	r.POST("/articles", controllers.CreateArticle)
 	r.GET("/articles", controllers.ListArticles)
+	r.GET("/articles/:id", controllers.Article)
 	return r
 }
 
@@ -204,9 +205,6 @@ func main() {
 	db.Preload("Profits").First(&company, 1) // find product with integer primary key
 	log.Println(company.Name)
 	log.Println("Profits: ", len(company.Profits))
-	// var profit Profit
-	// db.First(&profit, 1) // find product with integer primary key
-	// log.Println(profit.Ying_Shou)
 	r := setupRouter()
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
