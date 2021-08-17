@@ -3,6 +3,8 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/my-companies-be/models"
@@ -38,4 +40,27 @@ func CreateArticle(c *gin.Context) {
 			})
 		}
 	}
+}
+
+// PageSize for page records size
+var PageSize = 20
+
+// ListArticles get
+func ListArticles(c *gin.Context) {
+	var session models.Session
+	var articles []models.Article
+	token := c.GetHeader("Token")
+	log.Println("token", token)
+	db.Where("key = ?", token).Find(&session)
+	year := c.DefaultQuery("year", time.Now().Format("2006"))
+	page := c.DefaultQuery("page", "1")
+	offset, error := strconv.Atoi(page)
+	if error != nil {
+		log.Fatal("page format error", error)
+	}
+	db.Where("user_id = ? AND date_part('year',created_at) = ?", session.UserID, year).Find(&articles).Offset(offset * 20).Limit(20)
+	c.JSON(http.StatusOK, gin.H{
+		"articles": articles,
+		"message":  "ok",
+	})
 }
