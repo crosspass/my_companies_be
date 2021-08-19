@@ -196,6 +196,7 @@ func setupRouter() *gin.Engine {
 	r.POST("/articles", controllers.CreateArticle)
 	r.GET("/articles", controllers.ListArticles)
 	r.GET("/articles/:id", controllers.Article)
+	r.PUT("/articles/:id", controllers.UpdateArticle)
 	return r
 }
 

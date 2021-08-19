@@ -565,8 +565,9 @@ CREATE INDEX IF NOT EXISTS sessoins_key_index ON sessions (key);
  */
 CREATE TABLE IF NOT EXISTS articles (
   id SERIAL,
-  content text,
   user_id bigint,
+  content text,
+  raw_content text,
   created_at timestamptz,
   updated_at timestamptz,
   deleted_at timestamptz

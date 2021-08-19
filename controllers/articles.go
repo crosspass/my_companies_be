@@ -12,7 +12,9 @@ import (
 
 // ArticleReq for create article form
 type ArticleReq struct {
-	Content string `json:"content"`
+	ID          uint
+	HTMLContent string `json:"htmlContent"`
+	RawContent  string `json:"rawcontent"`
 }
 
 // CreateArticle create article
@@ -29,7 +31,7 @@ func CreateArticle(c *gin.Context) {
 			"message": err,
 		})
 	} else {
-		msg, ok := models.CreateArticle(session.UserID, articleReq.Content)
+		msg, ok := models.CreateArticle(session.UserID, articleReq.HTMLContent, articleReq.RawContent)
 		if ok {
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
@@ -39,6 +41,37 @@ func CreateArticle(c *gin.Context) {
 				"message": msg,
 			})
 		}
+	}
+}
+
+// UpdateArticle create article
+func UpdateArticle(c *gin.Context) {
+	var session models.Session
+	token := c.GetHeader("Token")
+	log.Println("token", token)
+	db.Where("key = ?", token).Find(&session)
+	var articleReq ArticleReq
+	var article models.Article
+	err = c.BindJSON(&articleReq)
+	log.Println("artilceReq", articleReq)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err,
+		})
+	} else {
+		ret := db.First(&article, articleReq.ID)
+		if ret.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": ret.Error.Error(),
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "ok",
+			})
+		}
+		article.Content = articleReq.HTMLContent
+		article.RawContent = articleReq.RawContent
+		db.Save(&article)
 	}
 }
 
