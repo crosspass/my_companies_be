@@ -112,3 +112,19 @@ func Article(c *gin.Context) {
 		"message": "ok",
 	})
 }
+
+// DeleteArticle mark article as deleted
+func DeleteArticle(c *gin.Context) {
+	var session models.Session
+	var article models.Article
+	token := c.GetHeader("Token")
+	log.Println("token", token)
+	db.Where("key = ?", token).Find(&session)
+	id := c.Param("id")
+	db.Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
+	db.Delete(&article)
+	c.JSON(http.StatusOK, gin.H{
+		"article": article,
+		"message": "ok",
+	})
+}

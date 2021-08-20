@@ -197,6 +197,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/articles", controllers.ListArticles)
 	r.GET("/articles/:id", controllers.Article)
 	r.PUT("/articles/:id", controllers.UpdateArticle)
+	r.DELETE("/articles/:id", controllers.DeleteArticle)
 	return r
 }
 
