@@ -12,4 +12,5 @@ type Session struct {
 	Key       string
 	LoginTime time.Time
 	UserID    uint
+	User      *User
 }

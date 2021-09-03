@@ -67,6 +67,65 @@ func ActiveUser(ctx *gin.Context) {
 	})
 }
 
+// StarReq for model
+type StarReq struct {
+	Key string `json:"key"`
+}
+
+// StarCompany user star company
+func StarCompany(ctx *gin.Context) {
+	var starReq StarReq
+	err := ctx.BindJSON(&starReq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var session models.Session
+	var company models.Company
+	token := ctx.GetHeader("Token")
+	db.Preload("User").Where("key = ?", token).Find(&session)
+	db.Where("name like ? or code like ?", "%"+starReq.Key+"%", "%"+starReq.Key+"%").Find(&company)
+	db.Model(&session.User).Association("Companies").Append(&company)
+	ctx.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"company": company,
+	})
+}
+
+// CompaniesRespStruct for star companies information
+type CompaniesRespStruct struct {
+	ID        uint
+	Name      string
+	Code      string
+	CsvCount  int
+	NoteCount int
+}
+
+// Companies for user star companies
+// GET /companies
+func Companies(ctx *gin.Context) {
+	var companies []models.Company
+	var companiesResp []CompaniesRespStruct
+	var session models.Session
+	token := ctx.GetHeader("Token")
+	db.Limit(10).Find(&companies) // find product with integer primary key
+	db.Preload("User").Where("key = ?", token).Find(&session)
+	db.Model(&session.User).Association("Companies").Find(&companies)
+	for _, company := range companies {
+		companyResp := CompaniesRespStruct{
+			ID:        company.ID,
+			Name:      company.Name,
+			Code:      company.Code,
+			CsvCount:  0,
+			NoteCount: 0,
+		}
+		companiesResp = append(companiesResp, companyResp)
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":   "ok",
+		"companies": companiesResp,
+	})
+}
+
 // Login user login website
 func Login(c *gin.Context) {
 	var userReq UserReq

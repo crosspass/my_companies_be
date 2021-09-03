@@ -573,3 +573,13 @@ CREATE TABLE IF NOT EXISTS articles (
   deleted_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS articles_user_id_index ON articles (user_id);
+
+/*
+ * users_companies
+ */
+CREATE TABLE IF NOT EXISTS users_companies (
+  user_id bigint,
+  company_id bigint
+);
+CREATE INDEX IF NOT EXISTS users_companies_user_id_index ON users_companies (user_id);
+CREATE INDEX IF NOT EXISTS users_companies_company_id_index ON users_companies (company_id);

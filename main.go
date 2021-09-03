@@ -94,17 +94,6 @@ func company(c *gin.Context) {
 }
 
 //
-// GET /companies
-func companies(c *gin.Context) {
-	var companies []Company
-	db.Limit(10).Find(&companies) // find product with integer primary key
-	c.JSON(http.StatusOK, gin.H{
-		"message":   "ok",
-		"companies": companies,
-	})
-}
-
-//
 // GET /reportSummary?code=SH600519
 func reportSummary(c *gin.Context) {
 	code := c.Query("code")
@@ -183,7 +172,7 @@ func setupRouter() *gin.Engine {
 		c.String(200, "pong")
 	})
 	r.GET("/profits", profits)
-	r.GET("/companies", companies)
+	r.GET("/companies", controllers.Companies)
 	r.GET("/companies/:code", company)
 	r.POST("/comments", saveComment)
 	r.GET("/reportSummary", reportSummary)
@@ -198,6 +187,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/articles/:id", controllers.Article)
 	r.PUT("/articles/:id", controllers.UpdateArticle)
 	r.DELETE("/articles/:id", controllers.DeleteArticle)
+	r.POST("/users/starCompany", controllers.StarCompany)
 	return r
 }
 

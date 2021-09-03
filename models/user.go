@@ -24,6 +24,7 @@ type User struct {
 	PasswordSalt  string
 	IsActived     bool
 	Session       Session
+	Companies     []Company `gorm:"many2many:users_companies;"`
 }
 
 // Active user
