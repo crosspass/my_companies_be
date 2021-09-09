@@ -168,6 +168,7 @@ func saveComment(c *gin.Context) {
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
+	r.Static("/uploads", "/Users/wu/uploads")
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
@@ -187,7 +188,11 @@ func setupRouter() *gin.Engine {
 	r.GET("/articles/:id", controllers.Article)
 	r.PUT("/articles/:id", controllers.UpdateArticle)
 	r.DELETE("/articles/:id", controllers.DeleteArticle)
+	r.GET("/article/stats", controllers.StatsArticle)
 	r.POST("/users/starCompany", controllers.StarCompany)
+	r.GET("/csvs", controllers.IndexCsv)
+	r.POST("/csvs/upload", controllers.UploadCSV)
+	r.POST("/csvs/upload/:id", controllers.UpdateCSVFile)
 	return r
 }
 

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -105,11 +106,50 @@ func Article(c *gin.Context) {
 	token := c.GetHeader("Token")
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
-	id := c.Param("id")
-	db.Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
+	year := c.Param("year")
+	db.Where("user_id = ? AND date_part('year',created_at) = ?", session.UserID, year)
 	c.JSON(http.StatusOK, gin.H{
 		"article": article,
 		"message": "ok",
+	})
+}
+
+type statsStruct struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
+// StatsArticle get specified article by ID
+func StatsArticle(c *gin.Context) {
+	var session models.Session
+	token := c.GetHeader("Token")
+	db.Where("key = ?", token).Find(&session)
+	year := c.Query("year")
+	start := year + "-01-01"
+	end := year + "-12-31"
+	sqlTmp := `SELECT date(created_at) as date, count(created_at) as total_count 
+	FROM "articles"
+	WHERE (deleted_at is null AND "articles"."user_id" = %d AND "articles"."created_at" BETWEEN '%s' AND '%s') 
+	GROUP BY date(created_at)
+	ORDER BY date DESC`
+	sql := fmt.Sprintf(sqlTmp, session.UserID, start, end)
+	log.Printf("sql %s\n", sql)
+	rows, err := db.Raw(sql).Rows()
+	if err != nil {
+		log.Printf("sql %s, error: %s", sql, err)
+	}
+	defer rows.Close()
+	var date string
+	var count int
+	var stats []statsStruct
+	for rows.Next() {
+		rows.Scan(&date, &count)
+		log.Printf("date: %s, count: %d\n", date, count)
+		stats = append(stats, statsStruct{date, count})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "ok",
+		"stats":   stats,
 	})
 }
 

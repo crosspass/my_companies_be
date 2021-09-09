@@ -583,3 +583,22 @@ CREATE TABLE IF NOT EXISTS users_companies (
 );
 CREATE INDEX IF NOT EXISTS users_companies_user_id_index ON users_companies (user_id);
 CREATE INDEX IF NOT EXISTS users_companies_company_id_index ON users_companies (company_id);
+
+/*
+ * csvs
+ */
+CREATE TABLE IF NOT EXISTS csvs (
+  id SERIAL,
+  path varchar,
+  name varchar,
+  origin_name varchar,
+  size int,
+  user_id bigint,
+  company_id bigint,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS csvs_user_id_index ON csvs (user_id);
+CREATE INDEX IF NOT EXISTS csv_company_id_index ON csvs (company_id);
+CREATE INDEX IF NOT EXISTS csv_user_company_id_index ON csvs (company_id, user_id);
