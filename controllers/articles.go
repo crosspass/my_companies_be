@@ -106,8 +106,8 @@ func Article(c *gin.Context) {
 	token := c.GetHeader("Token")
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
-	year := c.Param("year")
-	db.Where("user_id = ? AND date_part('year',created_at) = ?", session.UserID, year)
+	id := c.Param("id")
+	db.Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
 	c.JSON(http.StatusOK, gin.H{
 		"article": article,
 		"message": "ok",
