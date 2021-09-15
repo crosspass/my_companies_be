@@ -69,7 +69,7 @@ func ActiveUser(ctx *gin.Context) {
 
 // StarReq for model
 type StarReq struct {
-	Key string `json:"key"`
+	ID int `json:"id"`
 }
 
 // StarCompany user star company
@@ -83,7 +83,7 @@ func StarCompany(ctx *gin.Context) {
 	var company models.Company
 	token := ctx.GetHeader("Token")
 	db.Preload("User").Where("key = ?", token).Find(&session)
-	db.Where("name like ? or code like ?", "%"+starReq.Key+"%", "%"+starReq.Key+"%").Find(&company)
+	db.Find(&company, starReq.ID)
 	db.Model(&session.User).Association("Companies").Append(&company)
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":    200,
