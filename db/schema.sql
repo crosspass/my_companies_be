@@ -583,6 +583,15 @@ CREATE TABLE IF NOT EXISTS users_companies (
 );
 CREATE INDEX IF NOT EXISTS users_companies_user_id_index ON users_companies (user_id);
 CREATE INDEX IF NOT EXISTS users_companies_company_id_index ON users_companies (company_id);
+CREATE UNIQUE INDEX IF NOT EXISTS users_companies_user_id_company_id_index ON users_companies (user_id, company_id);
+
+CREATE TABLE IF NOT EXISTS articles_companies (
+  article_id bigint,
+  company_id bigint
+);
+CREATE INDEX IF NOT EXISTS articles_companies_article_id_index ON articles_companies (article_id);
+CREATE INDEX IF NOT EXISTS articles_companies_company_id_index ON articles_companies (company_id);
+CREATE UNIQUE INDEX IF NOT EXISTS articles_companies_article_id_company_id_index ON articles_companies (article_id, company_id);
 
 /*
  * csvs

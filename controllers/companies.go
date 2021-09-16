@@ -17,3 +17,18 @@ func SearchCompany(ctx *gin.Context) {
 		"companies": companies,
 	})
 }
+
+// CompanyArticles for company
+func CompanyArticles(ctx *gin.Context) {
+	var articles = make([]models.Article, 0)
+	var session models.Session
+	token := ctx.GetHeader("Token")
+	db.Where("key = ?", token).Find(&session)
+	var company models.Company
+	db.Where("code = ?", ctx.Param("code")).Find(&company)
+	db.Model(&company).Where("user_id = ?", session.UserID).Association("Articles").Find(&articles)
+	ctx.JSON(http.StatusOK, gin.H{
+		"code":     200,
+		"articles": articles,
+	})
+}

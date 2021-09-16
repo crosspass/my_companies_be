@@ -10,17 +10,18 @@ type Article struct {
 	Content    string
 	RawContent string
 	UserID     uint
+	Companies  []*Company `gorm:"many2many:articles_companies;"`
 }
 
 // CreateArticle create article
-func CreateArticle(userID uint, HTMLContent, rawContent string) (string, bool) {
+func CreateArticle(userID uint, HTMLContent, rawContent string) (*Article, string, bool) {
 	var article Article
 	article.UserID = userID
 	article.Content = HTMLContent
 	article.RawContent = rawContent
 	result := db.Create(&article) // pass pointer of data to Cre
 	if result.RowsAffected == 1 {
-		return "ok", true
+		return &article, "ok", true
 	}
-	return result.Error.Error(), false
+	return &article, result.Error.Error(), false
 }

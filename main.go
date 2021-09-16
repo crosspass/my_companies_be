@@ -175,6 +175,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/profits", profits)
 	r.GET("/companies", controllers.Companies)
 	r.GET("/companies/:code", company)
+	r.GET("/companies/:code/articles", controllers.CompanyArticles)
 	r.GET("/company/search", controllers.SearchCompany)
 	r.POST("/comments", saveComment)
 	r.GET("/reportSummary", reportSummary)

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,11 +15,13 @@ type ArticleReq struct {
 	ID          uint
 	HTMLContent string `json:"htmlContent"`
 	RawContent  string `json:"rawcontent"`
+	CompanyIds  []int  `json:"company_ids"`
 }
 
 // CreateArticle create article
 func CreateArticle(c *gin.Context) {
 	var session models.Session
+	var companies []models.Company
 	token := c.GetHeader("Token")
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
@@ -32,8 +33,10 @@ func CreateArticle(c *gin.Context) {
 			"message": err,
 		})
 	} else {
-		msg, ok := models.CreateArticle(session.UserID, articleReq.HTMLContent, articleReq.RawContent)
+		article, msg, ok := models.CreateArticle(session.UserID, articleReq.HTMLContent, articleReq.RawContent)
 		if ok {
+			db.Find(&companies, articleReq.CompanyIds)
+			db.Model(&article).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
@@ -48,6 +51,7 @@ func CreateArticle(c *gin.Context) {
 // UpdateArticle create article
 func UpdateArticle(c *gin.Context) {
 	var session models.Session
+	var companies []models.Company
 	token := c.GetHeader("Token")
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
@@ -66,13 +70,16 @@ func UpdateArticle(c *gin.Context) {
 				"message": ret.Error.Error(),
 			})
 		} else {
+			article.Content = articleReq.HTMLContent
+			article.RawContent = articleReq.RawContent
+			db.Save(&article)
+			fmt.Println("company_ids: ", articleReq.CompanyIds)
+			db.Find(&companies, articleReq.CompanyIds)
+			db.Model(&article).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
 		}
-		article.Content = articleReq.HTMLContent
-		article.RawContent = articleReq.RawContent
-		db.Save(&article)
 	}
 }
 
@@ -87,12 +94,12 @@ func ListArticles(c *gin.Context) {
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
 	year := c.DefaultQuery("year", time.Now().Format("2006"))
-	page := c.DefaultQuery("page", "1")
-	offset, error := strconv.Atoi(page)
-	if error != nil {
-		log.Fatal("page format error", error)
-	}
-	db.Where("user_id = ? AND date_part('year',created_at) = ?", session.UserID, year).Find(&articles).Offset(offset * 20).Limit(20)
+	// page := c.DefaultQuery("page", "1")
+	// offset, error := strconv.Atoi(page)
+	// if error != nil {
+	// 	log.Fatal("page format error", error)
+	// }
+	db.Preload("Companies").Where("user_id = ? AND date_part('year',created_at) = ?", session.UserID, year).Find(&articles) //.Offset(offset * 20).Limit(20)
 	c.JSON(http.StatusOK, gin.H{
 		"articles": articles,
 		"message":  "ok",

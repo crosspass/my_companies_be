@@ -93,30 +93,32 @@ func StarCompany(ctx *gin.Context) {
 
 // CompaniesRespStruct for star companies information
 type CompaniesRespStruct struct {
-	ID        uint
-	Name      string
-	Code      string
-	CsvCount  int
-	NoteCount int
+	ID           uint
+	Name         string
+	Code         string
+	CsvCount     int64
+	ArticleCount int64
 }
 
 // Companies for user star companies
 // GET /companies
 func Companies(ctx *gin.Context) {
 	var companies []models.Company
-	var companiesResp []CompaniesRespStruct
+	companiesResp := make([]CompaniesRespStruct, 0)
 	var session models.Session
 	token := ctx.GetHeader("Token")
 	db.Limit(10).Find(&companies) // find product with integer primary key
 	db.Preload("User").Where("key = ?", token).Find(&session)
 	db.Model(&session.User).Association("Companies").Find(&companies)
 	for _, company := range companies {
+		articleCount := db.Model(&company).Association("Articles").Count()
+		csvCount := db.Model(&company).Association("Csvs").Count()
 		companyResp := CompaniesRespStruct{
-			ID:        company.ID,
-			Name:      company.Name,
-			Code:      company.Code,
-			CsvCount:  0,
-			NoteCount: 0,
+			ID:           company.ID,
+			Name:         company.Name,
+			Code:         company.Code,
+			CsvCount:     csvCount,
+			ArticleCount: articleCount,
 		}
 		companiesResp = append(companiesResp, companyResp)
 	}
