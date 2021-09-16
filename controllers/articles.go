@@ -24,7 +24,7 @@ func CreateArticle(c *gin.Context) {
 	var companies []models.Company
 	token := c.GetHeader("Token")
 	log.Println("token", token)
-	db.Where("key = ?", token).Find(&session)
+	db.Preload("User").Where("key = ?", token).Find(&session)
 	var articleReq ArticleReq
 	err = c.BindJSON(&articleReq)
 	log.Println("artilceReq", articleReq)
@@ -37,6 +37,7 @@ func CreateArticle(c *gin.Context) {
 		if ok {
 			db.Find(&companies, articleReq.CompanyIds)
 			db.Model(&article).Association("Companies").Append(companies)
+			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
@@ -54,7 +55,7 @@ func UpdateArticle(c *gin.Context) {
 	var companies []models.Company
 	token := c.GetHeader("Token")
 	log.Println("token", token)
-	db.Where("key = ?", token).Find(&session)
+	db.Preload("User").Where("key = ?", token).Find(&session)
 	var articleReq ArticleReq
 	var article models.Article
 	err = c.BindJSON(&articleReq)
@@ -76,6 +77,7 @@ func UpdateArticle(c *gin.Context) {
 			fmt.Println("company_ids: ", articleReq.CompanyIds)
 			db.Find(&companies, articleReq.CompanyIds)
 			db.Model(&article).Association("Companies").Append(companies)
+			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
@@ -114,7 +116,7 @@ func Article(c *gin.Context) {
 	log.Println("token", token)
 	db.Where("key = ?", token).Find(&session)
 	id := c.Param("id")
-	db.Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
+	db.Preload("Companies").Where("user_id = ? AND ID = ?", session.UserID, id).Find(&article)
 	c.JSON(http.StatusOK, gin.H{
 		"article": article,
 		"message": "ok",
