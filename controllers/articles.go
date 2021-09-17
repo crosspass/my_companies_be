@@ -35,7 +35,7 @@ func CreateArticle(c *gin.Context) {
 	} else {
 		article, msg, ok := models.CreateArticle(session.UserID, articleReq.HTMLContent, articleReq.RawContent)
 		if ok {
-			db.Find(&companies, articleReq.CompanyIds)
+			db.Where("id IN ?", articleReq.CompanyIds).Find(&companies)
 			db.Model(&article).Association("Companies").Append(companies)
 			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
@@ -75,7 +75,7 @@ func UpdateArticle(c *gin.Context) {
 			article.RawContent = articleReq.RawContent
 			db.Save(&article)
 			fmt.Println("company_ids: ", articleReq.CompanyIds)
-			db.Find(&companies, articleReq.CompanyIds)
+			db.Where("id IN ?", articleReq.CompanyIds).Find(&companies)
 			db.Model(&article).Association("Companies").Append(companies)
 			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
