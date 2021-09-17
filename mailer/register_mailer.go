@@ -26,6 +26,7 @@ func init() {
 func SendActiveAccount(u *models.User) {
 	from := viper.GetString("from")
 	password := viper.GetString("password")
+	host := viper.GetString("host")
 
 	// Receiver email address.
 	to := []string{
@@ -39,8 +40,9 @@ func SendActiveAccount(u *models.User) {
 
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)
+	path := viper.GetString("tmplates") + "register.html"
 
-	t, err := template.ParseFiles("/Users/wu/github.com/my-companies-be/mailer/register.html")
+	t, err := template.ParseFiles(path)
 
 	if err != nil {
 		fmt.Println(err)
@@ -49,12 +51,14 @@ func SendActiveAccount(u *models.User) {
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", mimeHeaders)))
+	body.Write([]byte(fmt.Sprintf("Subject: 账号激活邮件 \n%s\n\n", mimeHeaders)))
 
 	t.Execute(&body, struct {
 		Token string
+		Host  string
 	}{
 		Token: u.RegisterToken,
+		Host: host,
 	})
 
 	// Sending email.
