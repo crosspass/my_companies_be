@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/my-companies-be/connect"
 	"github.com/my-companies-be/controllers"
 	"github.com/my-companies-be/models"
 	"github.com/spf13/viper"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -45,8 +45,10 @@ type Comment struct {
 	UserID    uint
 }
 
-var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-var db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+// var db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+var db = connect.Db
 
 func sliceAtoi(sa []string) ([]int, error) {
 	si := make([]int, 0, len(sa))
@@ -146,7 +148,7 @@ func balances(c *gin.Context) {
 // GET /profits?companies=1+2
 func saveComment(c *gin.Context) {
 	var comment Comment
-	err = c.BindJSON(&comment)
+	err := c.BindJSON(&comment)
 	log.Println("comment", comment)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{

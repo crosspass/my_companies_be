@@ -26,7 +26,7 @@ func CreateArticle(c *gin.Context) {
 	log.Println("token", token)
 	db.Preload("User").Where("key = ?", token).Find(&session)
 	var articleReq ArticleReq
-	err = c.BindJSON(&articleReq)
+	err := c.BindJSON(&articleReq)
 	log.Println("artilceReq", articleReq)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -58,7 +58,7 @@ func UpdateArticle(c *gin.Context) {
 	db.Preload("User").Where("key = ?", token).Find(&session)
 	var articleReq ArticleReq
 	var article models.Article
-	err = c.BindJSON(&articleReq)
+	err := c.BindJSON(&articleReq)
 	log.Println("artilceReq", articleReq)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{

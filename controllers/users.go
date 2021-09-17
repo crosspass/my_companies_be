@@ -5,14 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/my-companies-be/connect"
 	"github.com/my-companies-be/mailer"
 	"github.com/my-companies-be/models"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-var db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+var db *gorm.DB
+
+func init() {
+	db = connect.Db
+}
 
 // UserReq for model
 type UserReq struct {
@@ -132,7 +136,7 @@ func Companies(ctx *gin.Context) {
 func Login(c *gin.Context) {
 	var userReq UserReq
 	var user models.User
-	err = c.BindJSON(&userReq)
+	err := c.BindJSON(&userReq)
 	log.Println("comment", userReq)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{

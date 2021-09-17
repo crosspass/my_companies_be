@@ -13,15 +13,19 @@ import (
 	"time"
 
 	"golang.org/x/net/publicsuffix"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/my-companies-be/connect"
 	"github.com/my-companies-be/models"
 	"github.com/my-companies-be/utils"
 )
 
-var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-var db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// var dsn = "host=localhost user=wu password=gorm dbname=my_companies port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+var db *gorm.DB
+
+func init() {
+	db = connect.Db
+}
 
 type CompanyReq struct {
 	Symbol string
