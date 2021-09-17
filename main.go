@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/my-companies-be/controllers"
 	"github.com/my-companies-be/models"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -168,7 +169,8 @@ func saveComment(c *gin.Context) {
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
-	r.Static("/uploads", "/Users/wu/uploads")
+	upload := viper.GetString("uploads")
+	r.Static("/uploads", upload)
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})

@@ -26,7 +26,7 @@ func CompanyArticles(ctx *gin.Context) {
 	db.Where("key = ?", token).Find(&session)
 	var company models.Company
 	db.Where("code = ?", ctx.Param("code")).Find(&company)
-	db.Model(&company).Where("user_id = ?", session.UserID).Association("Articles").Find(&articles)
+	db.Model(&company).Where("user_id = ?", session.UserID).Preload("Companies").Association("Articles").Find(&articles)
 	ctx.JSON(http.StatusOK, gin.H{
 		"code":     200,
 		"articles": articles,

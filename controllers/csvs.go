@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/my-companies-be/models"
+	"github.com/spf13/viper"
 )
 
 type csvRespStruct struct {
@@ -31,7 +32,7 @@ func UploadCSV(ctx *gin.Context) {
 	file, _ := ctx.FormFile("file")
 	timestamp := time.Now().Unix()
 	dstName := strconv.FormatInt(timestamp, 10) + "_" + file.Filename
-	dst := "/Users/wu/uploads/" + dstName
+	dst := viper.GetString("uploads") + dstName
 	log.Println(file.Filename, file.Size)
 	csv.CompanyID = company.ID
 	csv.UserID = session.UserID
@@ -47,7 +48,8 @@ func UploadCSV(ctx *gin.Context) {
 	if err != nil {
 		log.Fatal("Read csv file content", err)
 	}
-	url := "http://localhost:8080/uploads/" + csv.Name
+	host := viper.GetString("host")
+	url := "http://" + host + "/uploads/" + csv.Name
 	csvResp := csvRespStruct{csv, string(content), url}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "ok",
@@ -70,7 +72,8 @@ func IndexCsv(ctx *gin.Context) {
 		if err != nil {
 			log.Fatal("Read csv file content", err)
 		}
-		url := "http://localhost:8080/uploads/" + csv.Name
+		host := viper.GetString("host")
+		url := "http://" + host + "/uploads/" + csv.Name
 		csvsResp = append(csvsResp, csvRespStruct{csv, string(content), url})
 	}
 	// single file
@@ -91,7 +94,7 @@ func UpdateCSVFile(ctx *gin.Context) {
 	file, _ := ctx.FormFile("file")
 	timestamp := time.Now().Local().UnixNano()
 	dstName := strconv.FormatInt(timestamp, 10) + "_" + file.Filename
-	dst := "/Users/wu/uploads/" + dstName
+	dst := viper.GetString("uploads") + dstName
 	log.Println(file.Filename, file.Size)
 	if err := os.Remove(csv.Path); err != nil {
 		log.Printf("remove file %s error %s", csv.Path, err)
