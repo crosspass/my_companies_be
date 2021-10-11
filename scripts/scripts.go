@@ -274,7 +274,9 @@ func getReportSummary() {
 	var companyCodes []string
 	var reportCodes []string
 	db.Table("companies").Select("code").Find(&companies)
-	db.Distinct("company_code").Select("company_code").Find(&reportSummaries)
+	// filter updated records
+	t := time.Now().AddDate(0, -1, 0)
+	db.Where("created_at > ?", t).Distinct("company_code").Select("company_code").Find(&reportSummaries)
 
 	for _, company := range companies {
 		companyCodes = append(companyCodes, company.Code)
@@ -468,7 +470,8 @@ func getIncome() {
 	var companyCodes []string
 	var reportCodes []string
 	db.Table("companies").Select("code").Find(&companies)
-	db.Distinct("company_code").Select("company_code").Find(&incomes)
+	t := time.Now().AddDate(0, -1, 0)
+	db.Where("created_at > ?", t).Distinct("company_code").Select("company_code").Find(&incomes)
 
 	for _, company := range companies {
 		companyCodes = append(companyCodes, company.Code)
@@ -669,7 +672,8 @@ func getCashFlow() {
 	var companyCodes []string
 	var reportCodes []string
 	db.Table("companies").Select("code").Find(&companies)
-	db.Distinct("company_code").Select("company_code").Find(&cashFlow)
+	t := time.Now().AddDate(0, -1, 0)
+	db.Where("created_at > ?", t).Distinct("company_code").Select("company_code").Find(&cashFlow)
 
 	for _, company := range companies {
 		companyCodes = append(companyCodes, company.Code)
@@ -914,7 +918,8 @@ func getBalance() {
 	var companyCodes []string
 	var reportCodes []string
 	db.Table("companies").Select("code").Find(&companies)
-	db.Distinct("company_code").Select("company_code").Find(&balances)
+	t := time.Now().AddDate(0, -1, 0)
+	db.Where("created_at > ?", t).Distinct("company_code").Select("company_code").Find(&balances)
 
 	for _, company := range companies {
 		companyCodes = append(companyCodes, company.Code)
