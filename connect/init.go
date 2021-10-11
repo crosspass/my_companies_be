@@ -21,10 +21,11 @@ func init() {
 	if err != nil {                            // Handle errors reading the config file
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
+  host := viper.GetString("db.host")
 	dbUser := viper.GetString("db.user")
 	dbName := viper.GetString("db.name")
 	fmt.Println("dbUser ", dbUser, dbName)
-	dsn := fmt.Sprintf("host=/var/run/postgresql user=%s password=gorm dbname=%s port=5432 sslmode=disable TimeZone=Asia/Shanghai", dbUser, dbName)
+	dsn := fmt.Sprintf("host=%s user=%s password=gorm dbname=%s port=5432 sslmode=disable TimeZone=Asia/Shanghai",host, dbUser, dbName)
 	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil { // Handle errors reading the config file
 		panic(fmt.Errorf("fatal error config file: %w", err))

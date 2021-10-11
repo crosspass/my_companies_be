@@ -598,12 +598,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS articles_companies_article_id_company_id_index
  */
 CREATE TABLE IF NOT EXISTS csvs (
   id SERIAL,
-  path varchar,
-  name varchar,
-  origin_name varchar,
-  size int,
   user_id bigint,
   company_id bigint,
+  title varchar,
+  chart_type varchar,
+  data text,
   created_at timestamptz,
   updated_at timestamptz,
   deleted_at timestamptz

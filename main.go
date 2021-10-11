@@ -199,6 +199,8 @@ func setupRouter() *gin.Engine {
 	r.GET("/csvs", controllers.IndexCsv)
 	r.POST("/csvs/upload", controllers.UploadCSV)
 	r.POST("/csvs/upload/:id", controllers.UpdateCSVFile)
+	r.POST("/csvs", controllers.CreateCsv)
+	r.PUT("/csvs/:id", controllers.UpdateCsv)
 	return r
 }
 
