@@ -39,6 +39,7 @@ func CreateArticle(c *gin.Context) {
 			db.Model(&article).Association("Companies").Append(companies)
 			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
+				"article": article,
 				"message": "ok",
 			})
 		} else {
