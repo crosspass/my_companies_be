@@ -111,7 +111,6 @@ func Companies(ctx *gin.Context) {
 	companiesResp := make([]CompaniesRespStruct, 0)
 	var session models.Session
 	token := ctx.GetHeader("Token")
-	db.Limit(10).Find(&companies) // find product with integer primary key
 	db.Preload("User").Where("key = ?", token).Find(&session)
 	db.Model(&session.User).Association("Companies").Find(&companies)
 	for _, company := range companies {
@@ -150,6 +149,7 @@ func Login(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{
 					"message": "ok",
 					"token":   token,
+					"user":    user,
 				})
 			} else {
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -162,4 +162,22 @@ func Login(c *gin.Context) {
 			})
 		}
 	}
+}
+
+// Info for user information
+// GET /user/info
+func Info(ctx *gin.Context) {
+	var session models.Session
+	token := ctx.GetHeader("Token")
+	db.Preload("User").Where("key = ?", token).Find(&session)
+	// if session.ID != 0 {
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "ok",
+		"user":    session.User,
+	})
+	// } else {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{
+	// 		"message": "Token invalid!",
+	// 	})
+	// }
 }

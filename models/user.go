@@ -18,12 +18,12 @@ type User struct {
 	UserName      string
 	FullName      string
 	Email         string
-	RegisterToken string
-	ActiveTime    time.Time
-	PasswordHash  string
-	PasswordSalt  string
+	RegisterToken string    `json:"-"`
+	ActiveTime    time.Time `json:"-"`
+	PasswordHash  string    `json:"-"`
+	PasswordSalt  string    `json:"-"`
 	IsActived     bool
-	Session       Session
+	Session       Session   `json:"-"`
 	Companies     []Company `gorm:"many2many:users_companies;"`
 }
 
