@@ -610,3 +610,38 @@ CREATE TABLE IF NOT EXISTS csvs (
 CREATE INDEX IF NOT EXISTS csvs_user_id_index ON csvs (user_id);
 CREATE INDEX IF NOT EXISTS csv_company_id_index ON csvs (company_id);
 CREATE INDEX IF NOT EXISTS csv_user_company_id_index ON csvs (company_id, user_id);
+
+/*
+ * businesses
+ */
+CREATE TABLE IF NOT EXISTS businesses (
+  id SERIAL,
+  user_id bigint,
+  name varchar,
+  description varchar,
+  created_at timestamptz,
+  updated_at timestamptz,
+  deleted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS businesses_user_id_index ON csvs (user_id);
+
+CREATE TABLE IF NOT EXISTS businesses_companies (
+  business_id bigint,
+  company_id bigint
+);
+
+CREATE INDEX IF NOT EXISTS businesses_companies_business_id_index ON businesses_companies (business_id);
+CREATE INDEX IF NOT EXISTS businesses_companies_company_id_index ON businesses_companies (company_id);
+CREATE UNIQUE INDEX IF NOT EXISTS businesses_companies_business_id_company_id_index ON businesses_companies (business_id, company_id);
+
+ALTER TABLE
+  articles
+ADD
+  COLUMN IF NOT EXISTS business_id bigint;
+CREATE INDEX IF NOT EXISTS articles_business_id_index ON articles(business_id);
+
+ALTER TABLE
+  csvs
+ADD
+  COLUMN IF NOT EXISTS business_id bigint;
+CREATE INDEX IF NOT EXISTS csvs_business_id_index ON csvs(business_id);

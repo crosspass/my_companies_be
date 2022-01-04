@@ -10,6 +10,7 @@ type Article struct {
 	Content    string
 	RawContent string
 	UserID     uint
+	BusinessID uint
 	Companies  []*Company `gorm:"many2many:articles_companies;"`
 }
 
