@@ -128,13 +128,27 @@ func Business(c *gin.Context) {
 
 // BusinessStat compare companies's data
 type BusinessStat struct {
-	Name                      string
-	Code                      string
-	ReportName                string
-	Category                  string
-	ReportDate                int
-	TotalRevenue              float64
-	NetProfitAfterNrgalAtsolc float64
+	Name                       string
+	Code                       string
+	ReportName                 string
+	Category                   string
+	ReportDate                 int
+	TotalRevenue               float64
+	NetProfitAfterNrgalAtsolc  float64
+	GrossSellingRate           float64
+	NetSellingRate             float64
+	AvgRoe                     float64
+	NetInterestOfTotalAssets   float64
+	AssetLiabRatio             float64
+	TotalCapitalTurnover       float64
+	InventoryTurnover          float64
+	AccountReceivableTurnover  float64
+	AccountsPayableTurnover    float64
+	CurrentAssetTurnoverRate   float64
+	FixedAssetTurnoverRatio    float64
+	CashReceivedOfSalesService float64
+	NcfFromOa                  float64
+	RadCost                    float64
 }
 
 // BusinessStats get specified business's stats data
@@ -144,15 +158,21 @@ func BusinessStats(c *gin.Context) {
 	id := c.Param("id")
 	db.Preload("Companies").Where("user_id = ? AND ID = ?", user.ID, id).Find(&business)
 	sql := `
-		select b.code, b.name, a.report_name, a.category, a.report_date,
-		a.total_revenue, a.net_profit_after_nrgal_atsolc
-		from report_summaries as a, companies as b
-		where a.company_code = ? and b.id = ?;
+		select a.code, a.name, b.report_name, b.category, b.report_date,
+		b.total_revenue, b.net_profit_after_nrgal_atsolc, b.gross_selling_rate, b.net_selling_rate,
+		b.avg_roe, b.net_interest_of_total_assets, b.asset_liab_ratio,
+		b.total_capital_turnover, b.inventory_turnover, b.account_receivable_turnover,
+		b.accounts_payable_turnover, b.current_asset_turnover_rate, b.fixed_asset_turnover_ratio,
+		c.cash_received_of_sales_service, c.ncf_from_oa, d.rad_cost
+		from report_summaries as b, companies as a, cash_flows as c,
+		incomes as d
+		where a.id = ? and b.company_code = ? and c.company_code = ? and d.company_code = ?
+		and b.report_date = c.report_date and b.report_date = d.report_date;
 	`
 	var businessesStats = make([][]BusinessStat, 0)
 	for _, company := range business.Companies {
 		var businessStats []BusinessStat
-		db.Raw(sql, company.Code, company.ID).Scan(&businessStats)
+		db.Raw(sql, company.ID, company.Code, company.Code, company.Code).Scan(&businessStats)
 		businessesStats = append(businessesStats, businessStats)
 	}
 	c.JSON(http.StatusOK, gin.H{
