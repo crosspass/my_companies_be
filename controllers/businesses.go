@@ -166,7 +166,8 @@ func BusinessStats(c *gin.Context) {
 		from report_summaries as b, companies as a, cash_flows as c,
 		incomes as d
 		where a.id = ? and b.company_code = ? and c.company_code = ? and d.company_code = ?
-		and b.report_date = c.report_date and b.report_date = d.report_date;
+		and b.report_date = c.report_date and b.report_date = d.report_date
+		order by b.report_date desc;
 	`
 	var businessesStats = make([][]BusinessStat, 0)
 	for _, company := range business.Companies {
