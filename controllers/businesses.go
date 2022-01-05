@@ -52,13 +52,14 @@ func UpdateBusiness(c *gin.Context) {
 	var businessReq BusinessReq
 	var business models.Business
 	err := c.BindJSON(&businessReq)
-	log.Println("artilceReq", businessReq)
+	log.Println("businessReq", businessReq)
+	id := c.Param("id")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"message": err,
 		})
 	} else {
-		ret := db.Where("id = ? and user_id = ?", businessReq.ID, user.ID).Find(&business)
+		ret := db.Where("id = ? and user_id = ?", id, user.ID).Find(&business)
 		if ret.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": ret.Error.Error(),
@@ -80,8 +81,7 @@ func UpdateBusiness(c *gin.Context) {
 
 // BusinessRespStruct list businesses
 type BusinessRespStruct struct {
-	ID           uint
-	Name         string
+	models.Business
 	CsvCount     int64
 	ArticleCount int64
 }
@@ -96,15 +96,14 @@ func ListBusiness(c *gin.Context) {
 	// if error != nil {
 	// 	log.Fatal("page format error", error)
 	// }
-	db.Preload("Businesses").Where("user_id = ? ", user.ID).Find(&businesses) //.Offset(offset * 20).Limit(20)
+	db.Preload("Companies").Where("user_id = ? ", user.ID).Find(&businesses) //.Offset(offset * 20).Limit(20)
 	for _, business := range businesses {
 		businessCount := db.Model(&business).Association("Articles").Count()
 		csvCount := db.Model(&business).Association("Csvs").Count()
 		businessResp := BusinessRespStruct{
-			ID:           business.ID,
-			Name:         business.Name,
-			CsvCount:     csvCount,
-			ArticleCount: businessCount,
+			business,
+			csvCount,
+			businessCount,
 		}
 		businessesResp = append(businessesResp, businessResp)
 	}
