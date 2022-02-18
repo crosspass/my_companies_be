@@ -70,8 +70,8 @@ func UpdateBusiness(c *gin.Context) {
 			db.Save(&business)
 			fmt.Println("company_ids: ", businessReq.CompanyIds)
 			db.Where("id IN ?", businessReq.CompanyIds).Find(&companies)
-			db.Model(&business).Association("Companies").Append(companies)
-			db.Model(&user).Association("Companies").Append(companies)
+			db.Model(&business).Association("Companies").Replace(companies)
+			db.Model(&user).Association("Companies").Replace(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
