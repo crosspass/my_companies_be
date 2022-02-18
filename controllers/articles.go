@@ -78,7 +78,7 @@ func UpdateArticle(c *gin.Context) {
 			fmt.Println("company_ids: ", articleReq.CompanyIds)
 			db.Where("id IN ?", articleReq.CompanyIds).Find(&companies)
 			db.Model(&article).Association("Companies").Replace(companies)
-			db.Model(&session.User).Association("Companies").Replace(companies)
+			db.Model(&session.User).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"message": "ok",
 			})
