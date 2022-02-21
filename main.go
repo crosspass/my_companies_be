@@ -207,6 +207,10 @@ func setupRouter() *gin.Engine {
 	r.GET("/businesses/:id", controllers.Business)
 	r.GET("/businesses/:id/stats", controllers.BusinessStats)
 	r.PUT("/businesses/:id", controllers.UpdateBusiness)
+	r.GET("/tops/roa", controllers.Roa)
+	r.GET("/tops/roaIncrease", controllers.RoaIncrease)
+	r.GET("/tops/roe", controllers.Roe)
+	r.GET("/tops/roeIncrease", controllers.RoeIncrease)
 	return r
 }
 
