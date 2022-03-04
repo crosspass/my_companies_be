@@ -73,7 +73,8 @@ func UpdateBusiness(c *gin.Context) {
 			db.Model(&business).Association("Companies").Replace(companies)
 			db.Model(&user).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
-				"message": "ok",
+				"business": business,
+				"message":  "ok",
 			})
 		}
 	}
