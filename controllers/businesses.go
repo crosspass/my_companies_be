@@ -32,7 +32,6 @@ func CreateBusiness(c *gin.Context) {
 		if ok {
 			db.Where("id IN ?", businessReq.CompanyIds).Find(&companies)
 			db.Model(&business).Association("Companies").Append(companies)
-			db.Model(&user).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"business": business,
 				"message":  "ok",
@@ -71,7 +70,6 @@ func UpdateBusiness(c *gin.Context) {
 			fmt.Println("company_ids: ", businessReq.CompanyIds)
 			db.Where("id IN ?", businessReq.CompanyIds).Find(&companies)
 			db.Model(&business).Association("Companies").Replace(companies)
-			db.Model(&user).Association("Companies").Append(companies)
 			c.JSON(http.StatusOK, gin.H{
 				"business": business,
 				"message":  "ok",

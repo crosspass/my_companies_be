@@ -95,6 +95,25 @@ func StarCompany(ctx *gin.Context) {
 	})
 }
 
+// UnStarCompany user unstar company
+func UnStarCompany(ctx *gin.Context) {
+	var starReq StarReq
+	err := ctx.BindJSON(&starReq)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var session models.Session
+	var company models.Company
+	token := ctx.GetHeader("Token")
+	db.Preload("User").Where("key = ?", token).Find(&session)
+	db.Find(&company, starReq.ID)
+	db.Model(&session.User).Association("Companies").Delete(&company)
+	ctx.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"company": company,
+	})
+}
+
 // CompaniesRespStruct for star companies information
 type CompaniesRespStruct struct {
 	ID           uint
