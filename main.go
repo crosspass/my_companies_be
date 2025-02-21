@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/my-companies-be/connect"
 	"github.com/my-companies-be/controllers"
+	controllersV2 "github.com/my-companies-be/controllers/v2"
 	"github.com/my-companies-be/models"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -62,7 +63,6 @@ func sliceAtoi(sa []string) ([]int, error) {
 	return si, nil
 }
 
-//
 // GET /profits?companies=1+2
 func profits(c *gin.Context) {
 	companies := c.Query("companies")
@@ -83,7 +83,6 @@ func profits(c *gin.Context) {
 	}
 }
 
-//
 // GET /companies/sz000325
 func company(c *gin.Context) {
 	var company Company
@@ -96,7 +95,6 @@ func company(c *gin.Context) {
 	})
 }
 
-//
 // GET /reportSummary?code=SH600519
 func reportSummary(c *gin.Context) {
 	code := c.Query("code")
@@ -108,7 +106,6 @@ func reportSummary(c *gin.Context) {
 	})
 }
 
-//
 // GET /incomes?code=SH600519
 func incomes(c *gin.Context) {
 	code := c.Query("code")
@@ -120,7 +117,6 @@ func incomes(c *gin.Context) {
 	})
 }
 
-//
 // GET /cashFlows?code=SH600519
 func cashFlows(c *gin.Context) {
 	code := c.Query("code")
@@ -132,7 +128,6 @@ func cashFlows(c *gin.Context) {
 	})
 }
 
-//
 // GET /balances?code=SH600519
 func balances(c *gin.Context) {
 	code := c.Query("code")
@@ -144,7 +139,6 @@ func balances(c *gin.Context) {
 	})
 }
 
-//
 // GET /profits?companies=1+2
 func saveComment(c *gin.Context) {
 	var comment Comment
@@ -212,15 +206,19 @@ func setupRouter() *gin.Engine {
 	r.GET("/tops/roaIncrease", controllers.RoaIncrease)
 	r.GET("/tops/roe", controllers.Roe)
 	r.GET("/tops/roeIncrease", controllers.RoeIncrease)
+
+	// v2 api
+	r.POST("/v2/users/register", controllersV2.RegisterUser)
+	r.POST("/v2/users/login", controllersV2.Login)
+	r.GET("/v2/users/active", controllersV2.ActiveUser)
+	r.GET("/v2/user/info", controllersV2.Info)
+	r.POST("/v2/users/starCompany", controllersV2.StarCompany)
+	r.PUT("/v2/unstarCompany", controllersV2.UnStarCompany)
 	return r
 }
 
 func main() {
 	// Read
-	var company Company
-	db.Preload("Profits").First(&company, 1) // find product with integer primary key
-	log.Println(company.Name)
-	log.Println("Profits: ", len(company.Profits))
 	r := setupRouter()
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

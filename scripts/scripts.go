@@ -52,7 +52,7 @@ func getCompanies() {
 		os.Exit(1)
 	}
 
-	types := [3]string{"sha", "sza", "cyb"}
+	types := [1]string{"sh_sz"}
 
 	for _, atype := range types {
 		page := 0
@@ -97,7 +97,7 @@ func getCompanies() {
 					db.Create(&models.Company{Name: companyReq.Name, Code: companyReq.Symbol})
 				}
 			}
-			time.Sleep(time.Duration(2) * time.Second)
+			time.Sleep(time.Duration(1) * time.Second)
 		}
 	}
 }
@@ -291,7 +291,7 @@ func getReportSummary() {
 
 	client := getClient()
 	for _, code := range codes {
-		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?type=ALL&is_detail=true&count=100"
+		const path string = "https://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?type=ALL&is_detail=true&count=100"
 		req, err := http.NewRequest("GET", path, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -302,10 +302,10 @@ func getReportSummary() {
 
 		fmt.Println(req.URL.String())
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			log.Fatal("Errored when sending request to the server")
 		}
+		defer resp.Body.Close()
 
 		fmt.Println(resp.Status)
 		if resp.StatusCode != http.StatusOK {
@@ -403,7 +403,7 @@ func getReportSummary() {
 				db.Create(&reportSummary)
 			}
 		}
-		time.Sleep(time.Duration(3) * time.Second)
+		time.Sleep(time.Duration(1) * time.Second)
 	}
 
 }
@@ -486,7 +486,7 @@ func getIncome() {
 
 	client := getClient()
 	for _, code := range codes {
-		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/income.json?type=ALL&is_detail=true&count=100"
+		const path string = "https://stock.xueqiu.com/v5/stock/finance/cn/income.json?type=ALL&is_detail=true&count=100"
 		req, err := http.NewRequest("GET", path, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -497,10 +497,10 @@ func getIncome() {
 
 		fmt.Println(req.URL.String())
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			log.Fatal("Errored when sending request to the server")
 		}
+		defer resp.Body.Close()
 
 		fmt.Println(resp.Status)
 		if resp.StatusCode != http.StatusOK {
@@ -688,7 +688,7 @@ func getCashFlow() {
 
 	client := getClient()
 	for _, code := range codes {
-		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/cash_flow.json?type=ALL&is_detail=true&count=100"
+		const path string = "https://stock.xueqiu.com/v5/stock/finance/cn/cash_flow.json?type=ALL&is_detail=true&count=100"
 		req, err := http.NewRequest("GET", path, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -699,10 +699,10 @@ func getCashFlow() {
 
 		fmt.Println(req.URL.String())
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			log.Fatal("Errored when sending request to the server")
 		}
+		defer resp.Body.Close()
 
 		fmt.Println(resp.Status)
 		if resp.StatusCode != http.StatusOK {
@@ -934,7 +934,7 @@ func getBalance() {
 
 	client := getClient()
 	for _, code := range codes {
-		const path string = "http://stock.xueqiu.com/v5/stock/finance/cn/balance.json?type=ALL&is_detail=true&count=100"
+		const path string = "https://stock.xueqiu.com/v5/stock/finance/cn/balance.json?type=ALL&is_detail=true&count=100"
 		req, err := http.NewRequest("GET", path, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -945,10 +945,10 @@ func getBalance() {
 
 		fmt.Println(req.URL.String())
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			log.Fatal("Errored when sending request to the server")
 		}
+		defer resp.Body.Close()
 
 		fmt.Println(resp.Status)
 		if resp.StatusCode != http.StatusOK {
@@ -1155,10 +1155,10 @@ func getBalance() {
 
 // parse xueqiu company's finace data
 func main() {
-	// getCompanies()
+	getCompanies()
 	// os.Setenv("HTTP_PROXY", "http://127.0.0.1:8008")
-	// getReportSummary()
-	// getIncome()
-	// getCashFlow()
+	getReportSummary()
+	getIncome()
+	getCashFlow()
 	getBalance()
 }

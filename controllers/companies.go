@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 // SearchCompany with code or name
 func SearchCompany(ctx *gin.Context) {
 	key := ctx.Query("key")
+	fmt.Println("key:", key)
 	var companies []models.Company
 	db.Where("name like ? or code like ?", "%"+key+"%", "%"+key+"%").Find(&companies)
 	ctx.JSON(http.StatusOK, gin.H{
